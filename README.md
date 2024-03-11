@@ -11,7 +11,7 @@
 - Then to start bot run node index.js
 > NOTE: Lavalink is needed for music functionality. You need to have a working Lavalink server to make the bot work.
 
-## 📝 | Important Note the bot still development it will take function may not working correctly
+## 📝 | Important Note: the bot still development it will take function may not working correctly
 
 
 
