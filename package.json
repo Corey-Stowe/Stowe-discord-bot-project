@@ -1,0 +1,27 @@
+{
+  "name": "stowe-bot-proj",
+  "version": "1.0.0",
+  "description": "A discord bot playing music and custom command",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [
+    "Discord",
+    "Bot"
+  ],
+  "author": "Stowe",
+  "license": "MIT",
+  "dependencies": {
+    "@discordjs/builders": "^1.7.0",
+    "@discordjs/rest": "^2.2.0",
+    "@discordjs/voice": "^0.16.1",
+    "axios": "^1.6.7",
+    "discord.js": "^13.14.0",
+    "dotenv": "^16.4.5",
+    "ffmpeg": "^0.0.4",
+    "fs": "^0.0.1-security",
+    "lavacord": "^2.1.4-v4",
+    "or": "^0.2.0"
+  }
+}
