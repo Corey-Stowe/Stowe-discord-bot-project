@@ -13,12 +13,16 @@ module.exports = {
             .setRequired(true)
     ),
 
-    async execute(interaction) {
+    async execute(client, interaction, options) {
         try {
             const playerInfo = interaction.options.getString("playerinfo");
             const [username, tag] = playerInfo.split("#");
             const encodedUsername = encodeURIComponent(username);
             const encodedTag = encodeURIComponent(tag);
+            const embed = new MessageEmbed()
+            .setColor(0x0099FF)
+            .setTitle(`Getting ${playerInfo} Information`)
+            interaction.reply({ embeds: [embed] });
             const apiUrl = `https://api.stoweteam.dev/profile/last-match/${encodedUsername}?number=${encodedTag}`;
     
             const response = await axios.get(apiUrl);
@@ -59,18 +63,18 @@ module.exports = {
  
                 )
         
-            interaction.reply({ embeds: [embed] });
+            interaction.editReply({ embeds: [embed] });
         } else {
             const embed = new MessageEmbed()
             .setColor("RED")
             .setTitle('Player not found or profile is private')
             .setDescription('If you want check a player contain special characher this bot can not checked it, or the player may have set their profile to private.');
 
-        interaction.reply({ embeds: [embed] });
+        interaction.editReply({ embeds: [embed] });
         }
         } catch (error) {
             console.error("Error fetching player information:", error);
-            interaction.reply("There was an error fetching player information. Please try again later.");
+            interaction.editReply("There was an error fetching player information. Please try again later.");
         }
     },
 }

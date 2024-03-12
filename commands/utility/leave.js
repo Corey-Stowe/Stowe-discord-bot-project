@@ -5,7 +5,7 @@ const { queue } = require('./play.js');
 
 module.exports = {
     data: new SlashCommandBuilder()
-        .setName("stop")
+        .setName("leave")
         .setDescription("Stops whatever the bot is playing and leaves the voice channel\n(This command will clear the queue)"),
     async execute(client, interaction, options) {
         const member = interaction.member;

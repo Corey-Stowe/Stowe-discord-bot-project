@@ -7,17 +7,20 @@ module.exports = {
     .setName("matchhistory")
     .setDescription("Get the 20 match history of the Valorant player")
     .addStringOption((option) =>
-      option
-        .setName("playerinfo")
+      option.setName("playerinfo")
         .setDescription("Enter the player information in the format 'username#tag'")
         .setRequired(true)
     ),
-  async execute(interaction) {
+  async execute(client, interaction, options) {
     try {
       const playerInfo = interaction.options.getString("playerinfo");
       const [username, tag] = playerInfo.split("#");
       const encodedUsername = encodeURIComponent(username);
       const encodedTag = encodeURIComponent(tag);
+      const embed = new MessageEmbed()
+      .setColor(0x0099FF)
+      .setTitle(`Getting ${playerInfo} Information`)
+      interaction.reply({ embeds: [embed] });
       const apiUrl = `https://api.stoweteam.dev/profile/list-match/${encodedUsername}?number=${encodedTag}`;
 
       const response = await axios.get(apiUrl);
@@ -46,7 +49,7 @@ module.exports = {
           return embed;
         };
 
-        const interactionReply = await interaction.reply({
+        const interactionReply = await interaction.editReply({
           embeds: [displayMatches()],
           components: [getButtons()],
         });
@@ -79,11 +82,11 @@ module.exports = {
             "If you want to check a player containing special characters, this bot cannot check it, or the player may have set their profile to private."
           );
 
-        interaction.reply({ embeds: [embed] });
+        interaction.editReply({ embeds: [embed] });
       }
     } catch (error) {
       console.error("Error fetching player information:", error);
-      interaction.reply("There was an error fetching player information. Please try again later.");
+      interaction.editReply("There was an error fetching player information. Please try again later.");
     }
   }
 };
