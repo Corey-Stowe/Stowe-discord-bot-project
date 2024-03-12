@@ -1,12 +1,11 @@
 const { MessageActionRow, MessageButton, MessageEmbed, Options, MessageAttachment } = require("discord.js");
 const { SlashCommandBuilder } = require('@discordjs/builders');
+const {normalizeYouTubeUrl} = require('../../lib/youtuberegex.js');
+const {sanitizeFilename} = require('../../lib/youtuberegex.js');
 const fs = require('fs');
 const ytdl = require('ytdl-core');
 const { v4: uuidv4 } = require('uuid'); // using uuid to create unique filename
 
-function sanitizeFilename(filename) {
-    return filename.replace(/[\\/:*?"<>|]/g, '_');
-}
 module.exports = {
     data: new SlashCommandBuilder()
         .setName("yt2mp3")
@@ -18,19 +17,28 @@ module.exports = {
         ),
 
     async execute(client, interaction, options) {
-        const ytlink = interaction.options.getString("link");
+        let ytlink = interaction.options.getString("link");
+        if (ytlink.includes('https://youtu.be/')) {
+            ytlink = normalizeYouTubeUrl(ytlink);
+        }
         const videoid = ytlink.split("?v=")[1];
         if (ytlink.includes('list=')) {
             return interaction.reply("Playlist is not supported")
         }
+        const embed = new MessageEmbed()
+        .setColor('#0099ff')
+        .setTitle('Getting info track...')
+        interaction.reply({ embeds: [embed] });
+
         const videoinfo = await ytdl.getInfo(videoid);
         const videoTitle = videoinfo.videoDetails.title;
         const videoURL = videoinfo.videoDetails.video_url;
         const Authordata = videoinfo.videoDetails.author;
         const Videoauthor = Authordata.name;
         //debug only
+        if(videoinfo){
         console.log(`Got request download: ${videoURL}|${videoTitle}|${Videoauthor}`);
-
+        }
         if (videoinfo.videoDetails.lengthSeconds > 420) {
             return interaction.reply("Due to attachment size limitations, the maximum length is 7 minutes.")
         } if (!videoURL) {
@@ -41,8 +49,8 @@ module.exports = {
                 .setColor('#0099ff')
                 .setTitle('Downloading...')
                 .setDescription(`[${videoTitle}](${videoURL})`);
-            await interaction.reply({ embeds: [embed] });
-
+            await interaction.followUp({ embeds: [embed] });
+    
             const uniqueFilename = `${uuidv4()}.mp3`;
             const sanitizedFilename = sanitizeFilename(videoTitle);
             const videoPath = `cache/${sanitizedFilename}_${uniqueFilename}`;

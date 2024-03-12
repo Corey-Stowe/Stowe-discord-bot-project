@@ -28,7 +28,6 @@ for (const folder of commandFolders) {
         }
     }
 }
-
 client.on('interactionCreate', async interaction => {
     if (!interaction.isCommand()) return;
     if (!interaction.member) {
@@ -60,6 +59,8 @@ client.on('interactionCreate', async interaction => {
         }
     }
 }); 
+
+
 //lavalink
 //lavalinkconn
 const lavalink = new Manager(nodes, {
@@ -80,15 +81,34 @@ async function connectLavalink() {
         await lavalink.connect();
         console.log('Lavalink connected');
     } catch (error) {
-        console.error('Error connecting to Lavalink:', error);
+        console.error('Lavalink not connected');
     }
+}
+async function purgecahe(){
+    const directory = 'cache';
+    fs.readdir(directory, (err, files) => {
+        if (err) throw err;
+      
+        for (const file of files) {
+          fs.unlink(path.join(directory, file), err => {
+            if (err) throw err;
+          });
+        }
+        if (files.length === 0){
+            console.log("Cache is empty")
+        } else {
+            console.log("Cache purged")
+        }
+      });
 }
 client.once('ready', () => {
     console.log(`Ready! Logged in as ${client.user.tag}`);
     client.commands.forEach(command => {
         console.log(`Command /${command.data.name} loaded.`);
+
     });
     connectLavalink()
+   purgecahe()
 
 });
 client.login(token);

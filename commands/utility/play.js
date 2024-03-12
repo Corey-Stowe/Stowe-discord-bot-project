@@ -1,13 +1,12 @@
 const { SlashCommandBuilder } = require('@discordjs/builders');
 const { MessageActionRow, MessageButton, MessageEmbed } = require("discord.js");
 const { id, host, port, password , token} = require('../../config.json');
-
+const {normalizeYouTubeUrl} = require('../../lib/youtuberegex.js');
 const { client } = require('../../index.js');
 const axios = require("axios");
 
 // Queue to store tracks
 const queue = new Map();
-let globalDecodedData; // Declare a global variable to store decoded data
 
 module.exports = {
     
@@ -22,8 +21,11 @@ module.exports = {
 
     async execute(client, interaction, options) {
         const member = interaction.member;
-        const song = interaction.options.getString("query");
-
+        let song = interaction.options.getString("query");
+        if (song.includes('https://youtu.be/')) {
+            song = normalizeYouTubeUrl(song);
+        }
+        console.log(song);
         if (!member || !member.voice || !member.voice.channel) {
             return interaction.reply({
                 content: 'You need to be in a voice channel to use this command.',
@@ -44,11 +46,11 @@ module.exports = {
 
                 const dataArray = response.data.data;
                 const encodedDataArray = dataArray.map(item => item.encoded);
-                //console.log(encodedDataArray);
-                //console.log(dataArray)
+                // console.log(encodedDataArray);
+                // console.log(dataArray)
                 const firstEncodedData = encodedDataArray[0];
                 author = dataArray[0].info.author;
-                title = dataArray[0].info.title;
+                title=  dataArray[0].info.title;
                 uri = dataArray[0].info.uri;
                 artwork = dataArray[0].info.artworkUrl;
                 length = dataArray[0].info.length;
@@ -75,6 +77,9 @@ module.exports = {
         // Function to start playback
         async function play(guildID, channelID) {
             const serverQueue = queue.get(guildID);
+            if(serverQueue){
+                console.log(`track added in ${channelID} : ${title}|${author} `);
+             }
             const player = await client.manager.join({
                 guild: guildID,
                 channel: channelID,
@@ -98,6 +103,9 @@ module.exports = {
                             .setTitle('Queue Ended')
                             .setDescription(`Queue ended`);
                             interaction.editReply({ embeds: [embed] });
+                            
+                            //remove serverQueue
+                            queue.delete(guildID);
                             client.manager.leave(guildID);
                     }
                 }

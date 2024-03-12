@@ -1,12 +1,10 @@
 const { MessageActionRow, MessageButton, MessageEmbed, Options, MessageAttachment } = require("discord.js");
 const { SlashCommandBuilder } = require('@discordjs/builders');
+const {normalizeYouTubeUrl} = require('../../lib/youtuberegex.js');
+const {sanitizeFilename} = require('../../lib/youtuberegex.js');
 const fs = require('fs');
 const ytdl = require('ytdl-core');
 const { v4: uuidv4 } = require('uuid'); // using uuid to create unique filename
-
-function sanitizeFilename(filename) {
-    return filename.replace(/[\\/:*?"<>|]/g, '_');
-}
 module.exports = {
     data: new SlashCommandBuilder()
         .setName("yt2mp4")
@@ -19,11 +17,16 @@ module.exports = {
 
     async execute(client, interaction, options) {
         const ytlink = interaction.options.getString("link");
-        console.log(quality);   
-        const videoid = ytlink.split("?v=")[1];
+        let videoid = ytlink.split("?v=")[1];
         if (ytlink.includes('list=')) {
             return interaction.reply("Playlist is not supported")
         }
+        const embed = new MessageEmbed()
+
+        .setColor('#0099ff')
+        .setTitle('Getting info track...')
+        interaction.reply({ embeds: [embed] });
+
         const videoinfo = await ytdl.getInfo(videoid);
         const videoTitle = videoinfo.videoDetails.title;
         const videoURL = videoinfo.videoDetails.video_url;
@@ -31,22 +34,22 @@ module.exports = {
         const Videoauthor = Authordata.name;
         console.log(`Got request download video: ${videoURL}|${videoTitle}|${Videoauthor}`);
 
-        if (videoinfo.videoDetails.lengthSeconds > 900) {
-            return interaction.reply("Due to attachment size limitations, the maximum length is 15 minutes.")
+        if (videoinfo.videoDetails.lengthSeconds > 300) {
+            return interaction.reply("Due to attachment size limitations, the maximum length is 10 minutes.")
         } if (!videoURL) {
             return interaction.reply("Something went wrong, please try again later.")
         }
         else {
             const embed = new MessageEmbed()
                 .setColor('#0099ff')
-                .setTitle('Downloading...')
+                .setTitle('Downloading video...')
                 .setDescription(`[${videoTitle}](${videoURL})`);
-            await interaction.reply({ embeds: [embed] });
+            await interaction.followUp({ embeds: [embed] });
 
             const uniqueFilename = `${uuidv4()}.mp4`;
             const sanitizedFilename = sanitizeFilename(videoTitle);
             const videoPath = `cache/${sanitizedFilename}_${uniqueFilename}`;
-            videoStream = ytdl(ytlink, {filter: 'videoandaudio',  quality: 'highestaudio' } );
+            videoStream = ytdl(ytlink, {filter: 'videoandaudio',  quality: '' } );
             const fileStream = fs.createWriteStream(videoPath);
 
             videoStream.pipe(fileStream);
