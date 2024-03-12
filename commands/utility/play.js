@@ -22,8 +22,6 @@ module.exports = {
 
     async execute(client, interaction, options) {
         const member = interaction.member;
-        const guildID = interaction.guild.id;
-        const channelId = member.voice.channel.id;
         const song = interaction.options.getString("query");
 
         if (!member || !member.voice || !member.voice.channel) {
@@ -32,7 +30,8 @@ module.exports = {
                 ephemeral: true
             });
         }
-
+        const guildID = interaction.guild.id;
+        const channelId = member.voice.channel.id;
         async function getSongs(search) {
             const params = new URLSearchParams();
             params.append("identifier", search);
@@ -99,6 +98,7 @@ module.exports = {
                             .setTitle('Queue Ended')
                             .setDescription(`Queue ended`);
                             interaction.editReply({ embeds: [embed] });
+                            client.manager.leave(guildID);
                     }
                 }
             });

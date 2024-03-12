@@ -30,11 +30,11 @@ module.exports = {
                 ephemeral: true,
             });
         }
-        console.log(member)
-        console.log(player)
-        // console.log(memberGuild)
-        console.log(guildID);
-        console.log(channelId);
+        // console.log(member)
+        // console.log(player)
+        // // console.log(memberGuild)
+        // console.log(guildID);
+        // console.log(channelId);
         //check if user in the same channel
         // if (player && channelId !== player.voiceChannel) {
         //     return interaction.reply({
@@ -46,8 +46,8 @@ module.exports = {
         //         ephemeral: true,
         //     });
         // }
-        console.log(guildID);
-        console.log(channelId);
+        // console.log(guildID);
+        // console.log(channelId);
         await client.manager.leave(guildID);
         const embed = new MessageEmbed()
             .setColor('#0099ff')
