@@ -50,7 +50,7 @@ module.exports = {
         // console.log(serverQueue);
 
         // Kiểm tra xem hàng đợi có tồn tại không
-        if (!serverQueue || serverQueue.length === "undefined") {
+        if (!serverQueue || serverQueue.length === 0) {
             return interaction.reply('There is no track to skip.');
             
         } else {
@@ -63,14 +63,11 @@ module.exports = {
                 await player.play(nextTrack.encodedData);
                 serverQueue.shift();
                 await interaction.reply(`Skipped the currently playing track: ${currentTrack.title}`);
+
                 
             } else {
-                 queue.delete(guildID);
-                 const player = client.manager.players.get(guildID);
-                  await player.stop();
-                await interaction.reply('Skipped the currently playing track and cleared the queue.');
+                return interaction.reply('There is no track to skip.');
             }
-
         }
 
     },

@@ -4,14 +4,27 @@
   "description": "A discord bot playing music and custom command",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "start": "node index",
+    "deploy": "node deploy",
+    "undeploy": "node destroyslash"
   },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Corey-Stowe/Stowe-discord-bot-project.git"
+  },
+  "engines": {
+    "node": ">=18.x"
+  },
+  
   "keywords": [
-    "Discord",
-    "Bot"
+    "discord",
+    "discord-bot",
+    "discord-musicbot",
+    "music",
+    "discord-music"
   ],
   "author": "Stowe",
-  "license": "MIT",
+  "license": "GPL-3.0-only",
   "dependencies": {
     "@discordjs/builders": "^1.7.0",
     "@discordjs/rest": "^2.2.0",

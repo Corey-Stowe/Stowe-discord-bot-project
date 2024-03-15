@@ -41,6 +41,9 @@ module.exports = {
         const channelId = member.voice.channel.id;
         const bot = interaction.guild.members.me;
         let song = interaction.options.getString("query");
+        if (song.includes('list=')) {
+            return interaction.reply("Playlist is not supported")
+        }
         if (song.includes('https://youtu.be/')) {
             song = normalizeYouTubeUrl(song);
         }
@@ -150,30 +153,10 @@ module.exports = {
                 if (data.type === "TrackEndEvent" && data.reason !== "replaced") {
                     // If there are more tracks in the queue, play the next one
                     if (serverQueue.length > 0) {
-                        const formattedDuration = `${Math.floor(second / 60)}:${(second % 60).toFixed(0).padStart(2, '0')}`;
-                        const embed = new MessageEmbed()
-                            .setColor('#0099ff')
-                            .setTitle("Playing next track")
-                            .setDescription(`[${title}](${uri})`)
-                            .setThumbnail(artwork)
-                            .addFields({
-                                    name: 'Author',
-                                    value: author,
-                                    inline: true
-                                }, {
-                                    name: 'Duration',
-                                    value: formattedDuration,
-                                    inline: true
-                                }, // Use the formatted duration value
-                            );
-                        interaction.editReply({
-                            embeds: [embed]
-                        });
                         play(guildID, channelID);
                     } else {
                         // No more tracks in the queue, perform any desired action (e.g., stop playback)
                         // Remove serverQueue
-                        interaction.followUp("No more tracks in the queue player will leave the voice channel");
                         queue.delete(guildID);
                         client.manager.leave(guildID);
                     }
