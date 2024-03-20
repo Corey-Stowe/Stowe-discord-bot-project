@@ -15,7 +15,6 @@
   "engines": {
     "node": ">=18.x"
   },
-  
   "keywords": [
     "discord",
     "discord-bot",
@@ -39,6 +38,7 @@
     "node-ytdl-core-v2": "^2.0.0",
     "or": "^0.2.0",
     "uuid": "^9.0.1",
+    "youtube-sr": "^4.3.10",
     "ytdl-core": "^4.11.5"
   }
 }
