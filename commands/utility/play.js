@@ -146,6 +146,7 @@ module.exports = {
             });
 
             const track = serverQueue[0];
+            console.log("start playing");
             await player.play(track.encodedData);
 
             // Remove the played track from the queue
@@ -157,49 +158,10 @@ module.exports = {
                     // If there are more tracks in the queue, play the next one
                     if (serverQueue.length > 0) {
                        if(!second){
-                
                             play(guildID, channelID);
-                            const embed = new MessageEmbed()
-                            .setColor('#0099ff')
-                            .setTitle("Added playlist to queue type /queue to see the list")
-                        interaction.followUp({
-                            embeds: [embed]
-                        });
-
                        } else {
                         play(guildID, channelID);
-                        const formattedDuration = `${Math.floor(second / 60)}:${(second % 60).toFixed(0).padStart(2, '0')}`;
-                        const embed = new MessageEmbed()
-                            .setColor('#0099ff')
-                            .setTitle("Now playing")
-                            .setDescription(`[${serverQueue[0].title}](${serverQueue[0].uri})`)
-                            .setThumbnail(artwork)
-                            .addFields({
-                                    name: 'Author',
-                                    value: serverQueue[0].uri,
-                                    inline: true
-                                }, {
-                                    name: 'Duration',
-                                    value: formattedDuration,
-                                    inline: true
-                                }, // Use the formatted duration value
-                            );
-                            try {
-                                interaction.editReply({ embeds: [embed] });
-                                } catch (error) {
-                                    // Nếu gặp lỗi khi gửi tin nhắn, kiểm tra xem lỗi có phải là do Webhook đã hết hạn không
-                                    if (error.code === 50027) { // Lỗi DiscordAPIError: Invalid Webhook Token
-                                    // Tạo một Webhook mới
-                                    const webhook = interaction.channel.createWebhook('Your Webhook Name');
-                                    // Gửi tin nhắn bằng Webhook mới
-                                    webhook.send({ embeds: [embed] });
-                                    // Xóa Webhook sau khi sử dụng
-                                     webhook.delete();
-                                    } else {
-                                     console.error('Error sending message:', error);
-                                    }
-                                }
-                          }
+                     }
                     } else {
                         // No more tracks in the queue, perform any desired action (e.g., stop playback)
                         // Remove serverQueue

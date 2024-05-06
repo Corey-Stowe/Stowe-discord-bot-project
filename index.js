@@ -28,41 +28,20 @@ for (const folder of commandFolders) {
         }
     }
 }
-client.on('interactionCreate', async interaction => {
-    if (!interaction.isCommand()) return;
-    if (!interaction.member) {
-        console.error('Interaction does not have a member property:', interaction);
-        return;
-    }
 
-    const command = client.commands.get(interaction.commandName);
+const eventsPath = path.join(__dirname, 'events');
+const eventFiles = fs.readdirSync(eventsPath).filter(file => file.endsWith('.js'));
 
-    if (!command) {
-        console.error(`No command matching ${interaction.commandName} was found.`);
-        return;
-    }
-
-    try {
-        await command.execute(client, interaction);
-    } catch (error) {
-        console.error(error);
-        if (interaction.replied || interaction.deferred) {
-            await interaction.followUp({
-                content: 'There was an error while executing this command!',
-                ephemeral: true
-            });
-        } else {
-            await interaction.reply({
-                content: 'There was an error while executing this command!',
-                ephemeral: true
-            });
-        }
-    }
-}); 
-
-
+for (const file of eventFiles) {
+	const filePath = path.join(eventsPath, file);
+	const event = require(filePath);
+	if (event.once) {
+		client.once(event.name, (...args) => event.execute(...args));
+	} else {
+		client.on(event.name, (...args) => event.execute(...args));
+	}
+}
 //lavalink
-//lavalinkconn
 const lavalink = new Manager(nodes, {
     user: Buffer.from(token.split(".")[0], "base64").toString("utf8"), // This just gets the client ID without needing to wait for ready since the first part of the token is the client ID
     send: packet => {
@@ -81,8 +60,29 @@ async function connectLavalink() {
         await lavalink.connect();
         console.log('Lavalink connected');
     } catch (error) {
-        console.error('Lavalink not connected');
+        console.log("trying reconnect max 200 attempts")
+        let count = 0;
+        let cooldown = 500;
+        while (count < 200) {
+            count++;
+            try {
+                await lavalink.connect();
+                console.log('Lavalink connected');
+                break;
+            } catch (error) {
+                console.log(`Reconnect failed ${count} times`);
+                await new Promise(resolve => setTimeout(resolve, cooldown));
+                cooldown = cooldown * 2;
+
+
+            }
+            if (count === 200) {
+                console.log("Connect Failed, Max attempts reached")
+            }
+        } 
+
     }
+    
 }
 async function purgecahe(){
     const directory = 'cache';
@@ -101,16 +101,10 @@ async function purgecahe(){
         }
       });
 }
-client.once('ready', () => {
-    console.log(`Ready! Logged in as ${client.user.tag}`);
-    client.commands.forEach(command => {
-        console.log(`Command /${command.data.name} loaded.`);
+connectLavalink();
+purgecahe();
 
-    });
-    connectLavalink()
-   purgecahe()
 
-});
 client.login(token);
 exports.client = client;
 exports.lavalink = lavalink;   
