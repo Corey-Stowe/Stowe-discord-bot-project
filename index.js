@@ -3,7 +3,7 @@ const path = require('path');
 const { Client, Collection, Intents } = require('discord.js');
 const {Manager} = require('lavacord');
 const client = new Client({intents: [Intents.FLAGS.GUILDS, Intents.FLAGS.GUILD_MESSAGES, Intents.FLAGS.GUILD_VOICE_STATES ]});
-const { id, host, port, password , token} = require('./config.json');
+const { id, host, port, password , token,wellcome_channel_id, wellcome_channel_guiid} = require('./config.json');
 const nodes = [{ id, host, port, password }];
 //commandloader
 client.commands = new Collection();
@@ -41,6 +41,37 @@ for (const file of eventFiles) {
 		client.on(event.name, (...args) => event.execute(...args));
 	}
 }
+client.on('interactionCreate', async interaction => {
+    if (!interaction.isCommand()) return;
+    if (!interaction.member) {
+        console.error('Interaction does not have a member property:', interaction);
+        return;
+    }
+
+    const command = client.commands.get(interaction.commandName);
+
+    if (!command) {
+        console.error(`No command matching ${interaction.commandName} was found.`);
+        return;
+    }
+
+    try {
+        await command.execute(client, interaction);
+    } catch (error) {
+        console.error(error);
+        if (interaction.replied || interaction.deferred) {
+            await interaction.followUp({
+                content: 'There was an error while executing this command!',
+                ephemeral: true
+            });
+        } else {
+            await interaction.reply({
+                content: 'There was an error while executing this command!',
+                ephemeral: true
+            });
+        }
+    }
+}); 
 //lavalink
 const lavalink = new Manager(nodes, {
     user: Buffer.from(token.split(".")[0], "base64").toString("utf8"), // This just gets the client ID without needing to wait for ready since the first part of the token is the client ID
