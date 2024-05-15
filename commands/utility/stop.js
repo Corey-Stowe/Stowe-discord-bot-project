@@ -30,6 +30,7 @@ module.exports = {
                 ephemeral: true,
             });
         }
+        
         //destroy the queue
         queue.delete(guildID);
         await client.manager.leave(guildID);

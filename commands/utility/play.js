@@ -73,6 +73,55 @@ module.exports = {
                 ephemeral: true,
             });
         }
+        //check if the channel is full
+        if (member.voice.channel.full) {
+            return interaction.reply({
+                embeds: [
+                    new MessageEmbed()
+                    .setColor("RED")
+                    .setTitle("Error")
+                    .setDescription("The voice channel is full"),
+                ],
+                ephemeral: true,
+            });
+        }
+        //check if the bot has permission to connect to the voice channel
+        if (!member.voice.channel.permissionsFor(bot).has("CONNECT")) {
+            return interaction.reply({
+                embeds: [
+                    new MessageEmbed()
+                    .setColor("RED")
+                    .setTitle("Error")
+                    .setDescription("I don't have permission to connect to the voice channel"),
+                ],
+                ephemeral: true,
+            });
+        }
+        //check if the bot has permission to speak in the voice channel
+        if (!member.voice.channel.permissionsFor(bot).has("SPEAK")) {
+            return interaction.reply({
+                embeds: [
+                    new MessageEmbed()
+                    .setColor("RED")
+                    .setTitle("Error")
+                    .setDescription("I don't have permission to speak in the voice channel"),
+                ],
+                ephemeral: true,
+            });
+        }
+        //check if the bot has see the voice channel
+        if (!member.voice.channel.permissionsFor(bot).has("VIEW_CHANNEL")) {
+            return interaction.reply({
+                embeds: [
+                    new MessageEmbed()
+                    .setColor("RED")
+                    .setTitle("Error")
+                    .setDescription("I don't have permission to see the voice channel"),
+                ],
+                ephemeral: true,
+            });
+        }
+
         async function getSongs(search) {
             const params = new URLSearchParams();
             params.append("identifier", search);
