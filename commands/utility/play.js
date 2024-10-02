@@ -16,6 +16,9 @@ const {
 const {
     normalizeYouTubeUrl
 } = require('../../lib/youtuberegex.js');
+const {
+    getYouTubeVideoId
+} = require('../../lib/youtuberegex.js');
 const YouTube = require("youtube-sr").default;
 const {
     client
@@ -48,7 +51,7 @@ module.exports = {
         let song = interaction.options.getString("query");
         if (song.includes('https://youtu.be/')) {
             song = normalizeYouTubeUrl(song);
-        }
+        } 
 
         // console.log(song);
         if (!member || !member.voice || !member.voice.channel) {
@@ -131,7 +134,8 @@ module.exports = {
                         Authorization: password
                     }
                 });
-
+                console.log(params)
+                console.log(response.data);
                 const dataArray = response.data.data;
                 const encodedDataArray = dataArray.map(item => item.encoded);
                 // console.log(encodedDataArray);
@@ -260,7 +264,13 @@ module.exports = {
                 }
             
             } else {
-                await getSongs("ytsearch:" + song);
+                if(song.includes('https://www.youtube.com/watch?v=')){
+                  let songid = getYouTubeVideoId(song);
+                    console.log(song);
+                    await getSongs(songid);
+                } else {
+                    await getSongs("ytsearch:" + song);
+                }
             }
             
             

@@ -23,7 +23,7 @@ module.exports = {
             .setColor(0x0099FF)
             .setTitle(`Getting ${playerInfo} Information`)
             interaction.reply({ embeds: [embed] });
-            const apiUrl = `https://api.stoweteam.dev/profile/last-match/${encodedUsername}?number=${encodedTag}`;
+            const apiUrl = `http://localhost/vlrapi/profile/profile/last-match/${encodedUsername}?number=${encodedTag}`;
     
             const response = await axios.get(apiUrl);
             console.log(response.data);

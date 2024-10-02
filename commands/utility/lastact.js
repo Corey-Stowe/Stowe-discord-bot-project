@@ -4,11 +4,11 @@ const axios = require("axios");
 
 module.exports = {
     data: new SlashCommandBuilder()
-    .setName("playerinf")
-    .setDescription("Get the current valorant player information")
+    .setName("lastact")
+    .setDescription("Get the preious act valorant player competitive information")
     .addStringOption(option =>
         option
-            .setName("playerinfo")
+            .setName("lastact")
             .setDescription("Enter the player information in the format 'username#tag'")
             .setRequired(true)
     ),
@@ -22,7 +22,7 @@ module.exports = {
             .setColor(0x0099FF)
             .setTitle(`Getting ${playerInfo} Information`)
             interaction.reply({ embeds: [embed] });
-            const apiUrl = `http://localhost/vlrapi/profile/global/${encodedUsername}?number=${encodedTag}`;
+            const apiUrl = `http://localhost/vlrapi/profile/previous-act/${encodedUsername}?number=${encodedTag}`;
             const response = await axios.get(apiUrl);
             console.log(response.data);
     
@@ -31,7 +31,7 @@ module.exports = {
                 const embed = new MessageEmbed()
                     .setColor(0x0099FF)
                     .setTitle(`${response.data.player} Information`)
-                    .setDescription('All Act Competitive Data Information')
+                    .setDescription('Previous Act Competitive Data Information')
                     .addFields(
                         { name: 'Current rank', value: `${response.data.currentRank}`, inline: true },
                         { name: 'Peak Rank', value: `${response.data.peakRank}` , inline: true },
@@ -46,7 +46,9 @@ module.exports = {
                         { name: 'DD/Δ', value: `${response.data.damageDeltaPerRound}`, inline: true },
                         { name: '% Head shot', value: `${response.data.headshotrate}` },
                         { name: 'Ace', value: `${response.data.ace}`, inline: true },
-                        { name: 'Clutch', value: `${response.data.clutch}`, inline: true }
+                        { name: 'Clutch', value: `${response.data.clutch}`, inline: true },
+                        {name: `${response.data.act}` }
+                    .setfooter({Text:'Player Information',URL:`https://tracker.gg/valorant/profile/riot/${response.data.player}/overview`})
                     );
     
                 interaction.editReply({ embeds: [embed] });

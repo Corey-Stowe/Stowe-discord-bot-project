@@ -65,6 +65,17 @@ module.exports = {
                     const nextTrack = serverQueue[0];
                     await player.play(nextTrack.encodedData);
                     serverQueue.shift();
+                    return interaction.reply({
+                        embeds: [
+                            new MessageEmbed()
+                            .setColor("BLUE")
+                            .setTitle("Skipped")
+                            .setDescription("Skipped to the next track in the queue."),
+                        ],
+                        ephemeral: true,
+                    });
+
+
                 } else {
                     // No more tracks in the queue, perform any desired action (e.g., stop playback)
                     queue.delete(guildID);

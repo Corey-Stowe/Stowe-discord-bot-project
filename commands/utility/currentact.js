@@ -22,7 +22,7 @@ module.exports = {
                 .setColor(0x0099FF)
                 .setTitle(`Getting ${playerInfo} Information`)
             interaction.reply({ embeds: [embed] });
-            const apiUrl = `http://128.199.242.124/profile/last-act/${encodedUsername}?number=${encodedTag}`;
+            const apiUrl = `http://localhost/vlrapi/profile/last-act/${encodedUsername}?number=${encodedTag}`;
             const response = await axios.get(apiUrl);
             console.log(response.data);
             
