@@ -29,7 +29,7 @@
     "@discordjs/rest": "^2.2.0",
     "@discordjs/voice": "^0.16.1",
     "@ffmpeg-installer/ffmpeg": "^1.1.0",
-    "axios": "^1.6.7",
+    "axios": "^1.7.4",
     "discord.js": "^13.14.0",
     "dotenv": "^16.4.5",
     "ffmpeg": "^0.0.4",
