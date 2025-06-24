@@ -1,26 +1,54 @@
 # StoweBot
 
-A lightweight Discord music bot built with Discord.js v14, designed to be simple, fast, and dependency-free with advanced 24/7 preset music support.
+A comprehensive Discord bot built with Discord.js v14, featuring music playback, economy system, gambling games, chemistry tools, and multi-language support.
 
 ## Features
 
-- 🎵 **Music Playbook** - Play music from YouTube and other sources
-- ⚡ **Lightweight** - No third-party music libraries like Lavalink required
-- 🔄 **Discord.js v14** - Built with the latest Discord.js version
-- 🎛️ **Queue Management** - Add, skip, pause, and manage your music queue
-- 🕰️ **24/7 Mode** - Continuous music playback with preset local files
-- 💾 **Local Audio Caching** - Downloads and caches audio files for better performance
-- 🎚️ **Loop Modes** - Single song, queue, or off loop options
-- 📱 **Slash Commands** - Modern Discord slash command support
-- 🔀 **Shuffle Support** - Randomize playlist order
-- 🗂️ **Auto-Scan** - Automatically detects new music files in preset folder
-- 📱**Improve UI** - New UI control
+### 🎵 Music System
+- **YouTube Integration** - Play videos and playlists directly from YouTube
+- **24/7 Mode** - Continuous music playback with preset local files
+- **Queue Management** - Advanced queue system with controls
+- **Loop Modes** - Single song, queue, or off loop options
+- **Audio Caching** - Downloads and caches audio files for better performance
+- **Interactive Controls** - Button-based music controls
+- **Playlist Support** - Support for YouTube playlists (up to 50 videos)
+
+### 💰 Economy System
+- **Virtual Currency** - Earn and spend coins through various activities
+- **Work System** - Multiple job types with cooldowns
+- **Balance Management** - Track user balances and transactions
+- **Leaderboards** - Server-wide wealth rankings
+- **Gift Codes** - Admin-created redeemable codes for rewards
+
+### 🎰 Gambling Games
+- **Tài Xỉu (Sicbo)** - Traditional Vietnamese dice game with multiple betting options
+- **Tôm Cua Cá** - Vietnamese animal dice game
+- **Rock Paper Scissors** - Classic game with money betting
+- **Baccarat** - Card game with Player/Banker/Tie options
+- **Crime System** - Risk-based money earning with multiple crime types
+
+### 🧪 Chemistry Tools
+- **Chemical Equation Balancer** - Automatically balance chemical equations
+- **Element Lookup** - Periodic table information
+- **Compound Database** - Common chemical compounds reference
+
+### 🌐 Multi-Language Support
+- **Language Management** - Support for English, Vietnamese, and Japanese
+- **Personal Language Settings** - Users can set individual language preferences
+- **Auto-Translation** - Automatic command scanning and translation generation
+- **I18n Statistics** - Translation coverage and completion tracking
+
+### 🔧 Advanced Features
+- **Admin Management** - Comprehensive admin tools for all systems
+- **Cache Management** - Automatic cleanup and size monitoring
+- **System Statistics** - Detailed bot and system information
+- **Help System** - Interactive categorized help with examples
 
 ## Installation
 
 1. Clone the repository:
 ```bash
-git clone https://github.com/Corey-Stowe/stowebot.git
+git clone https://github.com/Corey-Stowe/Stowe-discord-bot-project.git
 cd stowebot
 ```
 
@@ -29,17 +57,30 @@ cd stowebot
 npm install
 ```
 
-3. Create a `.env` file:
+3. Rename file `.env.example` to `.env.` file:
 ```env
-DISCORD_TOKEN=your_bot_token_here
 CLIENT_ID=your_bot_client_id
 ADMIN_ID=your_discord_user_id
+GUILD_ID=your_test_guild_id
+
+# Language Settings
+BOT_LANGUAGE=en
+# Available: en (English), vi (Vietnamese), ja (Japanese)
+# Cache Management Configuration
+CACHE_MAX_SIZE_MB=1024
+CACHE_CLEANUP_COUNT=5
+CACHE_AUTO_CLEANUP=true
 ```
 
 4. Create required directories:
 ```bash
 mkdir -p data/preset-music
 mkdir -p downloads
+mkdir -p data
+```
+5. Register slash command for bot:
+```bash
+npm run deploy
 ```
 
 5. Start the bot:
@@ -47,185 +88,206 @@ mkdir -p downloads
 npm start
 ```
 
+## Project Structure
+
+```
+stowebot/
+├── commands/              # Main slash command files
+│   ├── play.js           # Music playback command
+│   ├── queue.js          # Music queue management
+│   ├── mode24h.js        # 24/7 music mode control
+│   ├── nowplaying.js     # Current song display with controls
+│   ├── loop.js           # Loop mode management
+│   ├── resume.js         # Resume music playback
+│   ├── taixiu.js         # Tài Xỉu gambling game
+│   ├── tomcuaca.js       # Tôm Cua Cá gambling game
+│   ├── crime.js          # Crime system for earning money
+│   ├── chebal.js         # Chemical equation balancer
+│   ├── language.js       # Language management system
+│   ├── help.js           # Interactive help system
+│   ├── info.js           # Bot and system information
+│   ├── admin24h.js       # 24/7 system administration
+│   └── cleancache.js     # Cache and download management
+├── src/
+│   ├── commands/         # Additional command modules
+│   └── utils/            # Source utility modules
+│       └── cacheManager.js # Cache management utility
+├── utils/                # Core utility modules
+│   ├── musicPlayer.js    # Main music playback engine
+│   ├── preset24h.js      # 24/7 preset music system
+│   ├── database.js       # File-based database operations
+│   ├── userdata.js       # User economy data management
+│   ├── giftCodeManager.js # Gift code system
+│   └── i18n.js           # Internationalization system
+├── Plugins/              # External service integrations
+│   └── Youtube.js        # YouTube API integration
+├── languages/            # Translation files
+│   ├── en.json          # English translations
+│   ├── vi.json          # Vietnamese translations
+│   └── ja.json          # Japanese translations
+├── data/                 # Data storage directory
+│   ├── preset-music/    # 24/7 music files (.mp3, .flac, .wav)
+│   ├── cache.json       # YouTube video cache
+│   ├── queues.json      # Guild music queues
+│   ├── userdata.json    # User economy data
+│   ├── giftcodes.json   # Active gift codes
+│   ├── guild_settings.json # Guild-specific settings
+│   └── translations/     # Generated translation files
+├── downloads/            # Temporary audio downloads
+├── .env                 # Environment configuration
+├── package.json
+└── README.md
+```
+
+## Folder Structure Explained
+
+### `/commands/` - Main Command Files
+Contains all primary slash commands that users interact with. Each file represents a distinct bot feature:
+- **Music Commands**: `play.js`, `queue.js`, `mode24h.js`, `nowplaying.js`, `loop.js`, `resume.js`
+- **Economy Commands**: User balance and money management
+- **Gambling Commands**: `taixiu.js`, `tomcuaca.js`, `crime.js` - Games for earning/losing money
+- **Utility Commands**: `help.js`, `info.js`, `language.js`, `chebal.js`
+- **Admin Commands**: `admin24h.js`, `cleancache.js` - Administrative tools
+
+### `/utils/` - Core System Modules
+Backend logic and data management:
+- **`musicPlayer.js`** - Main music engine handling voice connections, playback, and queue management
+- **`preset24h.js`** - 24/7 music system with local file scanning and playlist management
+- **`database.js`** - JSON file-based database operations for queues and settings
+- **`userdata.js`** - User economy system managing balances, transactions, and statistics
+- **`giftCodeManager.js`** - Gift code creation, validation, and redemption system
+- **`i18n.js`** - Multi-language support with automatic translation management
+
+### `/Plugins/` - External Integrations
+- **`Youtube.js`** - YouTube API wrapper for video/playlist information and audio extraction
+
+### `/languages/` - Translation Files
+JSON files containing translations for each supported language:
+- **`en.json`** - English (default)
+- **`vi.json`** - Vietnamese
+- **`ja.json`** - Japanese
+
+### `/data/` - Persistent Data Storage
+- **`preset-music/`** - Local music files for 24/7 mode (supports .mp3, .flac, .wav, .ogg, .m4a)
+- **`cache.json`** - YouTube video metadata cache for faster loading
+- **`userdata.json`** - User profiles with balances, statistics, and game history
+- **`queues.json`** - Per-guild music queues and settings
+- **`giftcodes.json`** - Active gift codes and redemption history
+
+### `/downloads/` - Temporary Files
+Cached audio files downloaded from YouTube, automatically cleaned based on age and size limits
+
 ## Usage
 
-### Basic Music Commands
-
-- `/play <song>` - Play a song from YouTube or add to queue
-- `/skip` - Skip the current song
-- `/stop` - Stop playback and clear queue
-- `/queue` - Show current music queue
-- `/pause` - Pause current song
-- `/resume` - Resume playbook
-- `/loop <mode>` - Set loop mode (off/single/queue)
-
-### 24/7 Mode Commands
-
-- `/mode24h enable <channel>` - Enable 24/7 mode in a voice channel
-- `/mode24h disable` - Disable 24/7 mode
-- `/mode24h status` - Check 24/7 mode status
-
-### Admin Commands (Requires ADMIN_ID)
-
-- `/admin24h update` - Scan and update preset music playlist
-- `/admin24h list` - Show current 24/7 playlist
-- `/admin24h stats` - Show detailed system statistics
-- `/admin24h shuffle` - Enable shuffle and shuffle current playlist
-- `/admin24h clear` - Clear the entire preset playlist
-- `/admin24h cache <action>` - Manage cache and downloads
-- `/admin24h directory` - Show music directory contents
-- `/cleancache <type>` - Clean expired cache and downloads
-
-### Example Usage
-
-```
-/play never gonna give you up
-/queue
-/skip
-/mode24h enable #music-channel
-/admin24h stats
-/cleancache expired
+### Music Commands
+```bash
+/play <url>              # Play YouTube video/playlist
+/queue                   # Show current music queue
+/nowplaying             # Show current song with controls
+/loop <mode>            # Set loop mode (off/single/queue)
+/resume                 # Resume playback from queue
+/mode24h enable <channel> # Enable 24/7 mode
+/mode24h status         # Check 24/7 mode status
 ```
 
-## Key Notes
+### Economy & Gambling
+```bash
+/money [user]           # Check balance and profile
+/work                   # Earn money (15s cooldown)
+/taixiu <amount>        # Play Tài Xỉu dice game
+/tomcuaca <amount>      # Play Vietnamese animal dice
+/crime                  # Commit crimes for money (risky)
+/redeem <code>          # Redeem gift codes
+```
 
-### Discord.js v14 Upgrade
-- ✅ **Migrated to v14** - Uses latest Discord.js features and security updates
-- ✅ **Slash Commands** - Full support for Discord's modern command system
-- ✅ **Voice Connections** - Updated to use @discordjs/voice package
-- ✅ **Intents System** - Properly configured for Discord.js v14 requirements
+### Utility Commands
+```bash
+/help [command]         # Interactive help system
+/info                   # Bot and system statistics
+/language personal <lang> # Set personal language
+/chebal <equation>      # Balance chemical equations
+```
 
-### No Lavalink Dependency
-- ✅ **Direct Streaming** - Uses @distube/ytdl-core for YouTube audio extraction
-- ✅ **Reduced Complexity** - No need to manage separate Lavalink nodes
-- ✅ **Local Caching** - Downloads audio files for offline playback
-- ✅ **Easier Deployment** - Single process deployment
-
-### Lightweight Architecture
-- ✅ **Minimal Dependencies** - Only essential packages included
-- ✅ **File-based Database** - Uses JSON files instead of external databases
-- ✅ **Efficient Memory Usage** - Optimized for performance
-- ✅ **Fast Startup** - Quick bot initialization
-- ✅ **Auto-cleanup** - Automatic cache and download management
-
-## Base Code Structure
-
-```javascript
-// Basic bot setup with Discord.js v14
-const { Client, GatewayIntentBits } = require('discord.js');
-const { joinVoiceChannel, createAudioPlayer, createAudioResource } = require('@discordjs/voice');
-
-const client = new Client({
-    intents: [
-        GatewayIntentBits.Guilds,
-        GatewayIntentBits.GuildMessages,
-        GatewayIntentBits.GuildVoiceStates
-    ]
-});
-
-// Music player with 24/7 support
-const musicPlayer = require('./utils/musicPlayer');
-const preset24h = require('./utils/preset24h');
-
-// Voice connection and playback
-async function playMusic(interaction, query) {
-    const channel = interaction.member.voice.channel;
-    if (!channel) {
-        return interaction.reply('You need to be in a voice channel!');
-    }
-    
-    const connection = joinVoiceChannel({
-        channelId: channel.id,
-        guildId: interaction.guild.id,
-        adapterCreator: interaction.guild.voiceAdapterCreator,
-    });
-    
-    const player = createAudioPlayer();
-    musicPlayer.setPlayer(interaction.guild.id, player, connection);
-    connection.subscribe(player);
-}
+### Admin Commands
+```bash
+/admin24h update        # Scan preset music directory
+/admin24h stats         # Show system statistics
+/cleancache info        # Show detailed cache information
+/admingift create <amount> # Create gift codes
+/economyadmin give <user> <amount> # Manage user economy
 ```
 
 ## Configuration
 
 ### Required Permissions
-- Connect to voice channels
-- Speak in voice channels
-- Use slash commands
-- Send messages
-- Manage Server (for 24/7 mode)
+- **Voice Permissions**: Connect, Speak in voice channels
+- **Text Permissions**: Send Messages, Use Slash Commands
+- **Guild Permissions**: Manage Server (for 24/7 mode setup)
 
 ### Environment Variables
 ```env
-DISCORD_TOKEN=your_discord_bot_token
-CLIENT_ID=your_discord_application_id  
+CLIENT_ID=your_bot_client_id
 ADMIN_ID=your_discord_user_id
-GUILD_ID=your_test_guild_id (optional, for development)
+GUILD_ID=your_test_guild_id
+
+# Language Settings
+BOT_LANGUAGE=en
+# Available: en (English), vi (Vietnamese), ja (Japanese)
+# Cache Management Configuration
+CACHE_MAX_SIZE_MB=1024
+CACHE_CLEANUP_COUNT=5
+CACHE_AUTO_CLEANUP=true
 ```
 
 ### 24/7 Mode Setup
-1. Create the preset music directory: `data/preset-music/`
-2. Add your music files (.mp3, .flac, .wav, .ogg, .m4a) to this folder
-3. Use `/admin24h update` to scan and add files to playlist
-4. Enable 24/7 mode with `/mode24h enable #channel`
+1. Create directory: `data/preset-music/`
+2. Add music files (.mp3, .flac, .wav, .ogg, .m4a)
+3. Run `/admin24h update` to scan files
+4. Use `/mode24h enable #channel` to start
 
-## Development
+## Key Technical Features
 
-### Project Structure
-```
-stowebot/
-├── commands/           # Slash command files
-│   ├── play.js
-│   ├── queue.js
-│   ├── mode24h.js
-│   ├── admin24h.js
-│   └── cleancache.js
-├── utils/             # Core utility modules
-│   ├── musicPlayer.js
-│   ├── preset24h.js
-│   ├── database.js
-│   └── audioDownloader.js
-├── src/
-│   ├── commands/      # Additional commands
-│   └── utils/         # Additional utilities
-├── data/              # Data storage
-│   ├── preset-music/  # 24/7 music files
-│   ├── cache.json     # YouTube cache
-│   ├── queues.json    # Guild queues
-│   └── guild_settings.json
-├── downloads/         # Temporary audio downloads
-├── .env
-└── package.json
-```
+### Discord.js v14 Implementation
+- ✅ **Modern Architecture** - Built with latest Discord.js features
+- ✅ **Slash Commands** - Full application command support
+- ✅ **Button Interactions** - Interactive UI components
+- ✅ **Voice System** - @discordjs/voice integration
 
-### Dependencies
+### Performance Optimizations
+- ✅ **Intelligent Caching** - YouTube metadata and audio file caching
+- ✅ **Memory Management** - Automatic cleanup of old files
+- ✅ **Efficient Queuing** - JSON-based queue persistence
+- ✅ **Size Monitoring** - Automatic cache size management
+
+### Multi-Language System
+- ✅ **Dynamic Translations** - Real-time language switching
+- ✅ **User Preferences** - Individual language settings
+- ✅ **Auto-Generation** - Automatic translation file management
+- ✅ **Command Scanning** - Automatic detection of translatable strings
+
+## Dependencies
+
 ```json
 {
   "discord.js": "^14.x.x",
-  "@discordjs/voice": "^0.16.x",
-  "@distube/ytdl-core": "^4.x.x"
+  "@discordjs/voice": "^0.16.x", 
+  "@distube/ytdl-core": "^4.x.x",
+  "sodium": "^3.x.x"
 }
 ```
-
-### Contributing
-1. Fork the repository
-2. Create a feature branch
-3. Make your changes
-4. Test thoroughly
-5. Submit a pull request
 
 ## Troubleshooting
 
 ### Common Issues
-- **Bot not joining voice channel**: Check voice permissions
-- **No audio playing**: Verify ytdl-core is working and URLs are valid
-- **24/7 mode not working**: Ensure preset music files exist in `/data/preset-music/`
-- **Commands not working**: Check if slash commands are registered
+- **Voice Connection**: Check FFmpeg installation and voice permissions
+- **YouTube Playback**: Verify ytdl-core compatibility and network connectivity
+- **24/7 Mode**: Ensure music files exist in `/data/preset-music/` and run `/admin24h update`
+- **Language Issues**: Check translation files in `/languages/` directory
 
-### Performance Tips
-- Use `/cleancache expired` regularly to clean old cache
-- Monitor download folder size with `/admin24h stats`
-- Use high-quality audio files for 24/7 mode
+### Performance Monitoring
+- Use `/cleancache info` for comprehensive system statistics
+- Monitor `/downloads/` folder size regularly
+- Check `/admin24h stats` for 24/7 system health
 
 ## License
 
@@ -233,7 +295,8 @@ MIT License - see LICENSE file for details
 
 ## Support
 
-For support and questions, please open an issue on GitHub or join our Discord server.
+- **Repository**: [GitHub Issues](https://github.com/Corey-Stowe/Stowe-discord-bot-project/issues)
+- **Documentation**: This README and in-bot `/help` command
 
 ---
-**Note**: This bot requires Node.js 16.9.0 or higher and FFmpeg installed on your system for audio processing.
+**Requirements**: Node.js 18+, FFmpeg, Discord Bot Token
