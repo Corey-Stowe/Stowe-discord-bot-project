@@ -1,0 +1,10 @@
+{
+    "name": "24/7 Preset Playlist",
+    "description": "Default music for 24/7 mode",
+    "songs": [],
+    "shuffle": true,
+    "loop": true,
+    "lastUpdated": null,
+    "autoScanEnabled": true
+}
+       
