@@ -4,7 +4,11 @@
   "description": "Discord Bot",
   "main": "index.js",
   "scripts": {
-    "test": "test"
+    "start": "node index.js",
+    "dev": "node --watch index.js",
+    "deploy": "node slashbuilder.js",
+    "undeploy": "node resetslash.js",
+    "test": "echo \"Error: no test specified\" && exit 1"
   },
   "author": "Stowe",
   "license": "MIT",
@@ -19,6 +23,9 @@
     "dotenv": "^16.4.7",
     "ffmpeg": "^0.0.4",
     "sodium-native": "^5.0.6",
+    "soundcloud-downloader": "^1.0.0",
+    "spotify-web-api-node": "^5.0.2",
+    "youtube-sr": "^4.3.11",
     "ytpl": "^2.3.0"
   }
 }

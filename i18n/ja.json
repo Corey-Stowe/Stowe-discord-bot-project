@@ -1,0 +1,440 @@
+{
+  "common": {
+    "error": "❌ エラーが発生しました",
+    "insufficient_funds": "💸 資金不足！",
+    "invalid_amount": "❌ 無効な金額",
+    "user_not_found": "❌ ユーザーが見つかりません",
+    "success": "✅ 成功",
+    "cancelled": "❌ キャンセル",
+    "timeout": "⏰ タイムアウト",
+    "permission_denied": "❌ このコマンドを使用する権限がありません",
+    "voice_channel_required": "❌ このコマンドを使用するにはボイスチャンネルにいる必要があります"
+  },
+  "economy": {
+    "balance": "💰 残高",
+    "new_balance": "💳 新しい残高",
+    "current_balance": "💳 現在の残高",
+    "net_worth": "💎 純資産",
+    "total_earned": "📈 総収入",
+    "total_spent": "📉 総支出",
+    "games_played": "🎮 プレイしたゲーム",
+    "games_won": "🏆 勝利したゲーム",
+    "win_rate": "📊 勝率",
+    "account_age": "📅 アカウント年数",
+    "server_rank": "🏆 サーバーランク",
+    "profile_title": "{username}の経済プロフィール",
+    "leaderboard_title": "🏆 経済リーダーボード",
+    "insufficient_funds_message": "{needed}が必要ですが、{current}しかありません",
+    "transfer_success": "💸 送金成功！",
+    "transfer_message": "{username}に{amount}を正常に送金しました",
+    "cannot_transfer_self": "❌ 自分自身にお金を送金することはできません！",
+    "cannot_transfer_bot": "❌ ボットにお金を送金することはできません！",
+    "gift_redeemed": "ギフトコードを交換しました！"
+  },
+  "work": {
+    "title": "💼 仕事完了！",
+    "too_tired": "😴 疲れすぎ！",
+    "cooldown_message": "再び働く前に**{time}**秒休む必要があります。",
+    "earned": "💰 獲得",
+    "next_work": "{time}秒後に次の仕事が可能",
+    "messages": [
+      "配達ルートを完了しました！",
+      "地元のレストランを手伝いました！",
+      "フリーランスのコーディングをしました！",
+      "コンビニで働きました！",
+      "家具の移動を手伝いました！",
+      "データ入力の仕事をしました！"
+    ]
+  },
+  "crime": {
+    "title": "🏴‍☠️ 犯罪を選択",
+    "laying_low": "🚨 身を潜めています！",
+    "cooldown_message": "別の犯罪を実行する前に**{time}**秒待ってください。",
+    "selection_timeout": "⏰ 選択タイムアウト",
+    "timeout_message": "決定に時間がかかりすぎました。機会は過ぎました！",
+    "cancelled_title": "❌ 犯罪キャンセル",
+    "cancelled_message": "今日は犯罪を犯さないことにしました。賢い選択です！",
+    "choose_message": "実行したい犯罪の種類を選択してください。それぞれ異なるリスクと報酬があります！",
+    "choose_wisely": "賢く選択してください！高い報酬には高いリスクが伴います。",
+    "types": {
+      "petty": {
+        "name": "軽犯罪",
+        "emoji": "🏪",
+        "description": "**リスク:** 低 (30% 失敗)\n**報酬:** 1.5倍ベット\n**罰金:** 0.8倍ベット",
+        "success_messages": [
+          "万引きに成功しました！",
+          "観光客からスリをしました！",
+          "カフェから財布を盗みました！",
+          "高価な物を盗みました！"
+        ],
+        "fail_messages": [
+          "店舗警備に捕まりました！",
+          "被害者が気付いて警察を呼びました！",
+          "防犯カメラに見つかりました！",
+          "警備員が見ていました！"
+        ]
+      },
+      "bank": {
+        "name": "銀行強盗",
+        "emoji": "🏦",
+        "description": "**リスク:** 中 (60% 失敗)\n**報酬:** 2倍ベット\n**罰金:** 1.2倍ベット",
+        "success_messages": [
+          "銀行の金庫強盗に成功しました！",
+          "ATMネットワークをハックしました！",
+          "現金を持って逃げました！",
+          "強盗は完璧でした！"
+        ],
+        "fail_messages": [
+          "銀行警備に圧倒されました！",
+          "サイレント警報が作動しました！",
+          "警察の到着が早すぎました！",
+          "金庫が安全すぎました！"
+        ]
+      },
+      "heist": {
+        "name": "ダイヤモンド強盗",
+        "emoji": "💎",
+        "description": "**リスク:** 高 (80% 失敗)\n**報酬:** 3倍ベット\n**罰金:** 1.5倍ベット",
+        "success_messages": [
+          "貴重なダイヤモンドを盗みました！",
+          "博物館強盗が成功しました！",
+          "不可能な金庫を破りました！",
+          "完璧な犯罪を実行しました！"
+        ],
+        "fail_messages": [
+          "レーザー警備に捕まりました！",
+          "エリート警備部隊が到着しました！",
+          "警報システムが高度すぎました！",
+          "ロックダウンを作動させました！"
+        ]
+      },
+      "cyber": {
+        "name": "サイバー犯罪",
+        "emoji": "💻",
+        "description": "**リスク:** 中 (55% 失敗)\n**報酬:** 2.2倍ベット\n**罰金:** 1.1倍ベット",
+        "success_messages": [
+          "暗号通貨取引所のハックに成功しました！",
+          "企業アカウントを空にしました！",
+          "ダークウェブでデータを売りました！",
+          "大きなデータベースに侵入しました！"
+        ],
+        "fail_messages": [
+          "サイバーセキュリティがIPを追跡しました！",
+          "暗号化が破られました！",
+          "FBIサイバー部門に見つかりました！",
+          "ファイアウォールが攻撃をブロックしました！"
+        ]
+      },
+      "gta": {
+        "name": "自動車盗難",
+        "emoji": "🚗",
+        "description": "**リスク:** 高 (75% 失敗)\n**報酬:** 2.8倍ベット\n**罰金:** 1.4倍ベット",
+        "success_messages": [
+          "高級スポーツカーを盗みました！",
+          "装甲車をハイジャックしました！",
+          "レアなビンテージカーを取りました！",
+          "盗んだ車で逃げました！"
+        ],
+        "fail_messages": [
+          "警察の追跡が悪く終わりました！",
+          "車にGPS追跡がありました！",
+          "逃走中にクラッシュしました！",
+          "高速パトロールに囲まれました！"
+        ]
+      },
+      "launder": {
+        "name": "マネーロンダリング",
+        "emoji": "💸",
+        "description": "**リスク:** 低 (40% 失敗)\n**報酬:** 1.8倍ベット\n**罰金:** 0.9倍ベット",
+        "success_messages": [
+          "ペーパーカンパニー経由でマネーロンダリングしました！",
+          "汚いお金の洗浄に成功しました！",
+          "オフショア口座を完璧に使いました！",
+          "お金の痕跡を隠しました！"
+        ],
+        "fail_messages": [
+          "金融調査員が異常を発見しました！",
+          "銀行コンプライアンスがパターンを捕まえました！",
+          "監査証跡があなたに繋がりました！",
+          "疑わしい活動が報告されました！"
+        ]
+      }
+    }
+  },
+  "gambling": {
+    "dice": {
+      "title": "🎲 ダイス結果！",
+      "result": "🎯 結果",
+      "amount": "💰 金額",
+      "profit": "📈 利益",
+      "loss": "📉 損失",
+      "win": "🎉 勝利！",
+      "lose": "💸 敗北！",
+      "unknown_direction": "❌ 不明な方向: {direction}。'over'または'under'を使用してください",
+      "prediction_out_of_range": "❌ 予測は{min}から{max}の間である必要があります",
+      "bet_on_dice_roll_1100": "ダイスロール（1-100）にベット",
+      "amount_to_bet": "ベット金額",
+      "bet_over_or_under_the_target": "目標値を上回るか下回るかにベット",
+      "target_number_298": "目標数値（2-98）"
+    },
+    "rps": {
+      "title": "✂️ じゃんけん",
+      "choose_move": "手を選んでください！",
+      "your_choice": "👤 あなたの選択",
+      "bot_choice": "🤖 ボットの選択",
+      "result": "🎯 結果",
+      "bet_amount": "💰 ベット金額",
+      "payout": "💵 配当",
+      "win": "🎉 勝利！",
+      "lose": "💸 敗北！",
+      "draw": "🤝 引き分け！",
+      "outcome": "🔄 結果",
+      "bet_returned": "ベット返却",
+      "play_again": "もう一度プレイ",
+      "double_bet": "ベット倍増",
+      "cancel": "キャンセル",
+      "timeout_message": "選択に時間がかかりすぎました。ゲームはキャンセルされました。",
+      "game_cancelled": "じゃんけんゲームがキャンセルされました。",
+      "choices": {
+        "rock": "グー",
+        "paper": "パー",
+        "scissors": "チョキ"
+      },
+      "rules": {
+        "rock": "チョキを砕く",
+        "paper": "グーを覆う",
+        "scissors": "パーを切る"
+      },
+      "win_rule": "勝利: 2倍ベット | 引き分け: ベット保持 | 敗北: ベット喪失",
+      "play_rock_paper_scissors_for_money": "お金をかけてじゃんけんをプレイ",
+      "amount_to_bet": "ベット金額"
+    },
+    "baccarat": {
+      "title": "🃏 バカラ",
+      "choose_bet": "ベットタイプを選択してください：",
+      "player_description": "プレイヤーハンドにベット\n**配当:** 2:1（イーブンマネー）",
+      "banker_description": "バンカーハンドにベット\n**配当:** 1.95:1（5%手数料）",
+      "tie_description": "タイにベット\n**配当:** 9:1（高リスク）",
+      "choose_wisely": "賢くベットを選択してください！",
+      "bet_player": "プレイヤーベット",
+      "bet_banker": "バンカーベット",
+      "bet_tie": "タイベット",
+      "insufficient_funds": "💸 資金不足！",
+      "cancelled_title": " ゲームキャンセル",
+      "cancelled_message": "バカラゲームがキャンセルされました。",
+      "timeout_title": "⏰ ゲームタイムアウト",
+      "timeout_message": "ゲームがタイムアウトしました。ベットは置かれませんでした。",
+      "result_title": "🃏 バカラ結果",
+      "win_message": "🎉 勝利！",
+      "lose_message": "💸 敗北！"
+    },
+    "tomcuaca": {
+      "title": "🦐 トムクアカ（エビカニ魚）",
+      "choose_bet": "ベットする動物を選択してください：",
+      "shrimp_description": "**配当:** 6:1\nエビにベット",
+      "crab_description": "**配当:** 6:1\nカニにベット",
+      "fish_description": "**配当:** 6:1\n魚にベット",
+      "rooster_description": "**配当:** 6:1\n鶏にベット",
+      "deer_description": "**配当:** 6:1\n鹿にベット",
+      "gourd_description": "**配当:** 6:1\nひょうたんにベット",
+      "choose_wisely": "ラッキーアニマルを選んでください！",
+      "bet_shrimp": "エビベット",
+      "bet_crab": "カニベット",
+      "bet_fish": "魚ベット",
+      "bet_rooster": "鶏ベット",
+      "bet_deer": "鹿ベット",
+      "bet_gourd": "ひょうたんベット",
+      "insufficient_funds": "💸 資金不足！",
+      "cancelled_title": "❌ ゲームキャンセル",
+      "cancelled_message": "トムクアカゲームがキャンセルされました。",
+      "timeout_title": "⏰ ゲームタイムアウト",
+      "timeout_message": "ゲームがタイムアウトしました。ベットは置かれませんでした。",
+      "result_title": "🎲 トムクアカ結果",
+      "win_message": "🎉 勝利！",
+      "lose_message": "💸 敗北！"
+    },
+    "taixiu": {
+      "title": "🎲 タイシウ（シックボー）",
+      "choose_bet": "ベットを選択してください：",
+      "how_to_play": "🎲 **遊び方:** 3つのダイスを振って合計を予測！",
+      "payouts_info": "💰 **配当:** タイ/シウ = 2倍ベット | トリプル = 180倍ベット | 特定数字 = 6倍-60倍ベット",
+      "tai_description": "**合計:** 11-17\n**配当:** 2:1\n大きい数字にベット",
+      "xiu_description": "**合計:** 4-10\n**配当:** 2:1\n小さい数字にベット",
+      "triple_description": "**合計:** 3つの同じダイス\n**配当:** 180:1\n非常に稀だが巨額配当！",
+      "specific_description": "**合計:** 正確な合計を選択\n**配当:** 6倍-60倍ベット\n高リスク、高報酬！",
+      "specific_numbers_label": "🎰 特定数字",
+      "bet_amount_label": "💰 ベット金額",
+      "your_balance_label": "💳 あなたの残高",
+      "choose_wisely": "賢く選択してください！幸運を！",
+      "insufficient_funds": "💸 資金不足！",
+      "cancelled_title": " ゲームキャンセル",
+      "cancelled_message": "タイシウゲームがキャンセルされました。",
+      "timeout_title": "⏰ ゲームタイムアウト",
+      "timeout_message": "ゲームがタイムアウトしました。ベットは置かれませんでした。",
+      "result_title": "🎲 タイシウ結果",
+      "tai_win": "🔥 タイ勝利！",
+      "tai_lose": "❄️ タイ敗北！",
+      "xiu_win": "❄️ シウ勝利！",
+      "xiu_lose": "🔥 シウ敗北！",
+      "triple_win": "🎯 トリプル勝利！ジャックポット！",
+      "triple_lose": "💸 トリプルなし！",
+      "number_win": "🎰 数字{number}勝利！",
+      "number_lose": "💸 数字{number}敗北！",
+      "dice_results": "🎲 ダイス結果：",
+      "total": "合計：",
+      "your_bet": "🎯 あなたのベット",
+      "dice_total": "🎲 ダイス合計",
+      "bet_amount": "💰 ベット金額",
+      "total_payout": "🎁 総配当",
+      "amount_lost": "📉 損失額",
+      "net_profit": "📈 純利益/損失",
+      "new_balance": "💳 新しい残高",
+      "big_win": "🎊 **大勝利！** 🎊\n🎉 この素晴らしい勝利おめでとうございます！ 🎉",
+      "tai_display": "🔥 タイ（大）- 合計11-17",
+      "xiu_display": "❄️ シウ（小）- 合計4-10",
+      "triple_display": "🎯 トリプル - 全て同じダイス",
+      "number_display": "🎰 数字{number}",
+      "triple_indicator": "🎯 （トリプル！）"
+    }
+  },
+  "music": {
+    "now_playing": "🎵 再生中",
+    "added_to_queue": "📝 キューに追加",
+    "queue_title": "🎵 音楽キュー",
+    "queue_empty": "キューは空です。`/play`で曲を追加してください！",
+    "artist": "👤 アーティスト",
+    "bitrate": "🎧 ビットレート", 
+    "position": "📍 位置",
+    "loop_mode": "🔁 ループモード",
+    "queue_length": "📝 キューの長さ",
+    "status": "⏱️ ステータス",
+    "playing": "▶️ 再生中",
+    "paused": "⏸️ 音楽を一時停止しました！",
+    "resumed": "▶️ 音楽を再開しました！",
+    "skipped": "⏭️ 次の曲にスキップしました！",
+    "stopped": "⏹️ 音楽を停止し、切断しました！",
+    "no_music_playing": " 現在音楽は再生されていません！",
+    "no_queue_to_resume": " 再開するキューに曲がありません。最初に`/play`で音楽を追加してください！",
+    "already_playing": "🎵 音楽は既に再生中です！",
+    "music_resumed": "音楽再開",
+    "loop_modes": {
+      "off": "▶️ ループなし",
+      "single": "🔁 現在の曲をループ",
+      "queue": "🔂 キューをループ"
+    },
+    "skip_failed": "現在の曲をスキップできませんでした。",
+    "stop_failed": "音楽を停止できませんでした。",
+    "play_a_youtube_video_or_search_for_music": "YouTubeビデオを再生または音楽を検索",
+    "youtube_url_or_search_query": "YouTube URLまたは検索クエリ",
+    "auto_select_first_result_default_true": "最初の結果を自動選択（デフォルト：はい）",
+    "searching_for": "🔍 検索中: **{query}**...",
+    "no_search_results_found": "❌ 検索結果が見つかりません。",
+    "auto_selected": "🎵 自動選択済み",
+    "channel": "👤 チャンネル",
+    "duration": "⏱️ 再生時間",
+    "search_query": "🔍 検索クエリ",
+    "auto_selected_footer": "最初の結果を自動選択 • 手動選択にはautoselect:falseを使用",
+    "search_results": "🔍 検索結果",
+    "found_results_for": "**{query}**の検索結果: {count}件\n\n下のメニューから曲を選択してください:",
+    "choose_song_to_play": "再生する曲を選択",
+    "selection_expires_30_seconds": "選択は30秒で期限切れ",
+    "waiting_for_selection": "選択を待機中...",
+    "song_selected": "🎵 曲が選択されました",
+    "views": "👀 再生回数",
+    "selected_by": "👤 選択者",
+    "selection_timeout": "⏰ 選択タイムアウト",
+    "auto_selected_timeout": "自動選択: **{title}**",
+    "auto_selected_due_to_timeout": "タイムアウトのため自動選択",
+    "could_not_find_or_process_song": "❌ 要求された曲を見つけるか処理できませんでした。",
+    "error_processing_request": "❌ リクエストの処理中にエラーが発生しました。",
+    "processing_direct_url": "直接URLを処理中: {url}",
+    "no_audio_streams_available": "利用可能なオーディオストリームがありません",
+    "no_valid_audio_formats_found": "有効なオーディオフォーマットが見つかりません",
+    "playlist_added": "📝 プレイリストが追加されました",
+    "author": "👤 作成者",
+    "videos": "🎵 動画",
+    "requested_by": "👤 リクエスト者"
+  },
+  "admin": {
+    "money_given": "💰 お金を与えました",
+    "money_taken": "💸 お金を取りました",
+    "user_reset": "🔄 ユーザーリセット",
+    "admin_view": "🔍 管理者ビュー: {username}のプロフィール",
+    "given_message": "{username}に{amount}を与えました",
+    "taken_message": "{username}から{amount}を{status}",
+    "reset_message": "{username}の経済データをリセットしました",
+    "transaction_successful": "取引成功",
+    "insufficient_funds_partial": "全額を取るのに十分な資金がありません",
+    "last_work": "💼 最後の仕事",
+    "last_crime": "🏴‍☠️ 最後の犯罪",
+    "user_id": "🆔 ユーザーID",
+    "never": "なし"
+  },
+  "commands": {
+    "help": {
+      "description": "利用可能なすべてのコマンドとその使用方法を表示",
+      "show_all_available_commands_and_their_usage": "利用可能なすべてのコマンドとその使用方法を表示",
+      "get_detailed_help_for_a_specific_command": "特定のコマンドの詳細ヘルプを取得"
+    },
+    "resume": {
+      "description": "キューが存在する場合、音楽再生を再開",
+      "resume_music_playback_if_queue_exists": "キューが存在する場合、音楽再生を再開"
+    },
+    "baccarat": {
+      "description": "お金をかけてバカラカードゲームをプレイ",
+      "play_baccarat_card_game_for_money": "お金をかけてバカラカードゲームをプレイ",
+      "amount_to_bet": "ベット金額"
+    },
+    "tomcuaca": {
+      "description": "お金をかけてトムクアカ（ベトナムのダイスゲーム）をプレイ",
+      "play_tom_cua_ca_vietnamese_dice_game_for_money": "お金をかけてトムクアカ（ベトナムのダイスゲーム）をプレイ",
+      "amount_to_bet": "ベット金額"
+    },
+    "taixiu": {
+      "description": "お金をかけてタイシウ（シックボー）ダイスゲームをプレイ",
+      "play_tai_xiu_sicbo_dice_game_for_money": "お金をかけてタイシウ（シックボー）ダイスゲームをプレイ",
+      "amount_to_bet": "ベット金額"
+    },
+    "crime": {
+      "description": "お金のために犯罪を犯す（リスクあり！）",
+      "commit_a_crime_for_money_risky": "お金のために犯罪を犯す（リスクあり！）"
+    },
+    "dice": {
+      "description": "ダイスロール（1-100）にベット",
+      "bet_on_dice_roll_1100": "ダイスロール（1-100）にベット",
+      "amount_to_bet": "ベット金額",
+      "bet_over_or_under_the_target": "目標値を上回るか下回るかにベット",
+      "target_number_298": "目標数値（2-98）"
+    },
+    "gift": {
+      "description": "残高を使ってギフトコードを作成",
+      "create_a_gift_code_using_your_balance": "残高を使ってギフトコードを作成",
+      "amount_to_put_in_the_gift_code": "ギフトコードに入れる金額",
+      "maximum_uses_default_1_max_10": "最大使用回数（デフォルト：1、最大：10）",
+      "expiration_time_1h_6h_1d_3d_7d_default_24h": "有効期限（1h、6h、1d、3d、7d - デフォルト：24h）"
+    },
+    "redeem": {
+      "description": "ギフトコードを交換して残高を獲得",
+      "redeem_a_gift_code_for_economy_balance": "ギフトコードを交換して残高を獲得",
+      "the_gift_code_to_redeem": "交換するギフトコード"
+    },
+    "mygifts": {
+      "description": "作成したギフトコードを表示",
+      "view_your_created_gift_codes": "作成したギフトコードを表示"
+    },
+    "admingift": {
+      "description": "ギフトコード管理の管理者コマンド",
+      "admin_commands_for_gift_code_management": "ギフトコード管理の管理者コマンド",
+      "create_a_new_gift_code": "新しいギフトコードを作成",
+      "balance_amount_for_the_gift_code": "ギフトコードの残高金額",
+      "maximum_uses_default_1": "最大使用回数（デフォルト：1）",
+      "expiration_time_eg_7d_24h_1w": "有効期限（例：7d、24h、1w）",
+      "show_all_active_gift_codes": "すべてのアクティブなギフトコードを表示",
+      "delete_a_specific_gift_code": "特定のギフトコードを削除",
+      "the_gift_code_to_delete": "削除するギフトコード",
+      "show_gift_code_redemption_history": "ギフトコード交換履歴を表示",
+      "show_gift_code_system_statistics": "ギフトコードシステム統計を表示",
+      "clean_up_expired_gift_codes": "期限切れギフトコードをクリーンアップ"
+    }
+  }
+}

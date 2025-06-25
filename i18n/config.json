@@ -1,0 +1,64 @@
+{
+  "autoScan": {
+    "enabled": false,
+    "interval": 30000,
+    "enabledInProduction": false
+  },
+  "patterns": {
+    "economy": [
+      "balance",
+      "money",
+      "funds",
+      "transfer",
+      "give",
+      "take",
+      "earn"
+    ],
+    "gambling": [
+      "win",
+      "lose",
+      "bet",
+      "payout",
+      "result",
+      "outcome",
+      "score"
+    ],
+    "music": [
+      "playing",
+      "queue",
+      "music",
+      "song",
+      "artist",
+      "track"
+    ],
+    "crime": [
+      "crime",
+      "steal",
+      "rob",
+      "heist",
+      "fine",
+      "caught"
+    ],
+    "work": [
+      "work",
+      "job",
+      "task",
+      "salary",
+      "employment"
+    ]
+  },
+  "excludeKeys": [
+    "test",
+    "debug",
+    "temp"
+  ],
+  "supportedLanguages": [
+    "en",
+    "vi",
+    "ja"
+  ],
+  "notifications": {
+    "newKeysFound": false,
+    "errorsOccurred": false
+  }
+}

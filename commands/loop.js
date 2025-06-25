@@ -1,14 +1,21 @@
 const { SlashCommandBuilder, EmbedBuilder, ActionRowBuilder, ButtonBuilder, ButtonStyle } = require('discord.js');
 const Database = require('../utils/database.js');
 const musicPlayer = require('../utils/musicPlayer.js');
+const i18n = require('../utils/i18n.js');
 
 module.exports = {
     data: new SlashCommandBuilder()
         .setName('loop')
         .setDescription('Control music loop settings')
+        .setDescriptionLocalizations({
+            vi: 'Điều khiển cài đặt lặp nhạc'
+        })
         .addStringOption(option =>
             option.setName('mode')
                 .setDescription('Loop mode to set')
+                .setDescriptionLocalizations({
+                    vi: 'Chế độ lặp để đặt'
+                })
                 .setRequired(false)
                 .addChoices(
                     { name: '🔁 Loop Current Song', value: 'single' },
@@ -20,12 +27,13 @@ module.exports = {
         const guildId = interaction.guild.id;
         const db = new Database();
         const mode = interaction.options.getString('mode');
+        const lang = await i18n.getLanguage(guildId, interaction.user.id);
         
         // Check if user is in voice channel
         if (!interaction.member.voice.channel) {
             return interaction.reply({ 
-                content: '❌ You need to be in a voice channel to use loop controls!', 
-                ephemeral: true 
+                content: i18n.translate(lang, 'common.voice_channel_required'), 
+                flags: [4096] // Use flags instead of ephemeral: true
             });
         }
 
@@ -33,15 +41,15 @@ module.exports = {
         const playerData = musicPlayer.getPlayer(guildId);
         if (!playerData) {
             return interaction.reply({ 
-                content: '❌ No music is currently playing!', 
-                ephemeral: true 
+                content: i18n.translate(lang, 'music.no_music_playing'), 
+                flags: [4096] // Use flags instead of ephemeral: true
             });
         }
 
         if (mode) {
             // Set loop mode directly
             await setLoopMode(guildId, mode, db);
-            const modeText = getLoopModeText(mode);
+            const modeText = getLoopModeText(mode, lang);
             
             const embed = new EmbedBuilder()
                 .setColor('#00ff00')
@@ -52,12 +60,12 @@ module.exports = {
             return interaction.reply({ embeds: [embed] });
         } else {
             // Show interactive loop control panel
-            await showLoopPanel(interaction, guildId, db);
+            await showLoopPanel(interaction, guildId, db, lang);
         }
     },
 };
 
-async function showLoopPanel(interaction, guildId, db) {
+async function showLoopPanel(interaction, guildId, db, lang) {
     let currentMode = 'off';
     try {
         currentMode = await db.getLoopMode(guildId) || 'off';
@@ -71,13 +79,13 @@ async function showLoopPanel(interaction, guildId, db) {
         .setColor('#0099ff')
         .setTitle('🎵 Loop Control Panel')
         .setDescription(
-            `**Current Mode:** ${getLoopModeText(currentMode)}\n` +
-            `**Now Playing:** ${currentSong ? `${currentSong.title}` : 'Nothing'}\n\n` +
+            `**Current Mode:** ${getLoopModeText(currentMode, lang)}\n` +
+            `**${i18n.translate(lang, 'music.now_playing')}:** ${currentSong ? `${currentSong.title}` : 'Nothing'}\n\n` +
             `Choose your loop preference:`
         )
         .addFields(
-            { name: '🔁 Loop Current', value: 'Repeat the current song', inline: true },
-            { name: '🔂 Loop Queue', value: 'Repeat the entire queue', inline: true },
+            { name: '🔁 Loop Current', value: i18n.translate(lang, 'commands.loop.repeat_the_current_song'), inline: true },
+            { name: '🔂 Loop Queue', value: i18n.translate(lang, 'commands.loop.repeat_the_entire_queue'), inline: true },
             { name: '▶️ No Loop', value: 'Play normally without looping', inline: true }
         )
         .setFooter({ text: 'Click a button to change loop mode' })
@@ -116,7 +124,7 @@ async function showLoopPanel(interaction, guildId, db) {
         if (buttonInteraction.user.id !== interaction.user.id) {
             return buttonInteraction.reply({ 
                 content: '❌ Only the command user can control this panel!', 
-                ephemeral: true 
+                flags: [4096] // Use flags instead of ephemeral: true
             });
         }
 
@@ -128,13 +136,13 @@ async function showLoopPanel(interaction, guildId, db) {
             .setColor('#00ff00')
             .setTitle('🎵 Loop Control Panel')
             .setDescription(
-                `**Current Mode:** ${getLoopModeText(newMode)}\n` +
-                `**Now Playing:** ${currentSong ? `${currentSong.title}` : 'Nothing'}\n\n` +
-                `✅ Loop mode updated to: **${getLoopModeText(newMode)}**`
+                `**Current Mode:** ${getLoopModeText(newMode, lang)}\n` +
+                `**${i18n.translate(lang, 'music.now_playing')}:** ${currentSong ? `${currentSong.title}` : 'Nothing'}\n\n` +
+                `✅ Loop mode updated to: **${getLoopModeText(newMode, lang)}**`
             )
             .addFields(
-                { name: '🔁 Loop Current', value: 'Repeat the current song', inline: true },
-                { name: '🔂 Loop Queue', value: 'Repeat the entire queue', inline: true },
+                { name: '🔁 Loop Current', value: i18n.translate(lang, 'commands.loop.repeat_the_current_song'), inline: true },
+                { name: '🔂 Loop Queue', value: i18n.translate(lang, 'commands.loop.repeat_the_entire_queue'), inline: true },
                 { name: '▶️ No Loop', value: 'Play normally without looping', inline: true }
             )
             .setFooter({ text: 'Loop mode successfully changed!' })
@@ -203,25 +211,26 @@ async function setLoopMode(guildId, mode, db) {
     console.log(`Loop mode set to ${mode} for guild ${guildId}`);
 }
 
-function getLoopModeText(mode) {
+function getLoopModeText(mode, lang) {
     switch (mode) {
         case 'single':
-            return '🔁 Loop Current Song';
+            return i18n.translate(lang, 'music.loop_modes.single');
         case 'queue':
-            return '🔂 Loop Queue';
+            return i18n.translate(lang, 'music.loop_modes.queue');
         case 'off':
         default:
-            return '▶️ No Loop';
+            return i18n.translate(lang, 'music.loop_modes.off');
     }
 }
-function getLoopModeText(mode) {
-    switch (mode) {
-        case 'single':
-            return '🔁 Loop Current Song';
-        case 'queue':
-            return '🔂 Loop Queue';
+
+function getNextLoopMode(currentMode) {
+    switch (currentMode) {
         case 'off':
+            return 'single';
+        case 'single':
+            return 'queue';
+        case 'queue':
         default:
-            return '▶️ No Loop';
+            return 'off';
     }
 }

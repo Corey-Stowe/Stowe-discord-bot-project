@@ -1,20 +1,25 @@
 const { SlashCommandBuilder, EmbedBuilder, ActionRowBuilder, ButtonBuilder, ButtonStyle } = require('discord.js');
 const musicPlayer = require('../utils/musicPlayer.js');
 const Database = require('../utils/database.js');
+const i18n = require('../utils/i18n.js');
 
 module.exports = {
     data: new SlashCommandBuilder()
         .setName('nowplaying')
-        .setDescription('Show currently playing song with controls'),
+        .setDescription('Show currently playing song with controls')
+        .setDescriptionLocalizations({
+            vi: 'Hiển thị bài hát đang phát với các điều khiển'
+        }),
     
     async execute(interaction) {
         const guildId = interaction.guild.id;
+        const lang = await i18n.getLanguage(guildId, interaction.user.id); // Add missing lang variable
         const playerData = musicPlayer.getPlayer(guildId);
         
         if (!playerData || !playerData.currentSong) {
             return interaction.reply({ 
-                content: '❌ No music is currently playing!', 
-                ephemeral: true 
+                content: 'No music is currently playing!', 
+                flags: [4096] // Use flags instead of ephemeral: true
             });
         }
 
@@ -25,15 +30,15 @@ module.exports = {
 
         const embed = new EmbedBuilder()
             .setColor('#ff6b6b')
-            .setTitle('🎵 Now Playing')
+            .setTitle(i18n.translate(lang, 'music.now_playing'))
             .setDescription(`**${song.title}**`)
             .addFields(
-                { name: '👤 Artist', value: song.author || 'Unknown', inline: true },
-                { name: '🎧 Quality', value: song.quality || 'Unknown', inline: true },
-                { name: '👤 Requested by', value: song.requestedBy || 'Unknown', inline: true },
-                { name: '🔁 Loop Mode', value: getLoopModeText(loopMode), inline: true },
-                { name: '📝 Queue Length', value: `${queue.length} songs`, inline: true },
-                { name: '⏱️ Status', value: '▶️ Playing', inline: true }
+                { name: i18n.translate(lang, 'music.artist'), value: song.author || 'Unknown', inline: true },
+                { name: i18n.translate(lang, 'music.bitrate'), value: song.quality || 'Unknown', inline: true },
+                { name: i18n.translate(lang, 'music.requested_by'), value: song.requestedBy || 'Unknown', inline: true },
+                { name: i18n.translate(lang, 'music.loop_mode'), value: getLoopModeText(loopMode, lang), inline: true },
+                { name: i18n.translate(lang, 'music.queue_length'), value: `${queue.length} songs`, inline: true },
+                { name: i18n.translate(lang, 'music.status'), value: i18n.translate(lang, 'music.playing'), inline: true }
             )
             .setTimestamp();
 
@@ -79,7 +84,7 @@ module.exports = {
             // Check if user is in voice channel
             if (!buttonInteraction.member.voice.channel) {
                 return buttonInteraction.reply({ 
-                    content: '❌ You need to be in a voice channel to use music controls!', 
+                    content: i18n.translate(lang, 'common.voice_channel_required'), 
                     flags: [4096] // MessageFlags.Ephemeral
                 });
             }
@@ -91,18 +96,18 @@ module.exports = {
                     if (musicPlayer.isPlaying(guildId)) {
                         musicPlayer.pause(guildId);
                         await buttonInteraction.reply({ 
-                            content: '⏸️ Music paused!', 
+                            content: i18n.translate(lang, 'music.paused'), 
                             flags: [4096]
                         });
                     } else if (musicPlayer.isPaused(guildId)) {
                         musicPlayer.resume(guildId);
                         await buttonInteraction.reply({ 
-                            content: '▶️ Music resumed!', 
+                            content: i18n.translate(lang, 'music.resumed'), 
                             flags: [4096]
                         });
                     } else {
                         await buttonInteraction.reply({ 
-                            content: '❌ No music is currently playing!', 
+                            content: i18n.translate(lang, 'music.no_music_playing'), 
                             flags: [4096]
                         });
                     }
@@ -111,7 +116,7 @@ module.exports = {
                 case 'skip':
                     await musicPlayer.playNext(guildId);
                     await buttonInteraction.reply({ 
-                        content: '⏭️ Skipped to next song!', 
+                        content: i18n.translate(lang, 'music.skipped'), 
                         flags: [4096]
                     });
                     break;
@@ -119,7 +124,7 @@ module.exports = {
                 case 'stop':
                     musicPlayer.disconnect(guildId);
                     await buttonInteraction.reply({ 
-                        content: '⏹️ Music stopped and disconnected!', 
+                        content: i18n.translate(lang, 'music.stopped'), 
                         flags: [4096]
                     });
                     break;
@@ -131,7 +136,7 @@ module.exports = {
                     await db.setLoopMode(guildId, nextLoop);
                     
                     await buttonInteraction.reply({ 
-                        content: `🔁 Loop mode changed to: **${getLoopModeText(nextLoop)}**`, 
+                        content: `🔁 Loop mode changed to: **${getLoopModeText(nextLoop, lang)}**`, 
                         flags: [4096]
                     });
                     break;
@@ -156,15 +161,15 @@ module.exports = {
     },
 };
 
-function getLoopModeText(mode) {
+function getLoopModeText(mode, lang) {
     switch (mode) {
         case 'single':
-            return '🔁 Loop Current Song';
+            return i18n.translate(lang, 'music.loop_modes.single');
         case 'queue':
-            return '🔂 Loop Queue';
+            return i18n.translate(lang, 'music.loop_modes.queue');
         case 'off':
         default:
-            return '▶️ No Loop';
+            return i18n.translate(lang, 'music.loop_modes.off');
     }
 }
 

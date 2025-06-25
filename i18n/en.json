@@ -1,0 +1,430 @@
+{
+  "common": {
+    "error": "❌ An error occurred",
+    "insufficient_funds": "💸 Insufficient funds!",
+    "invalid_amount": "❌ Invalid amount",
+    "user_not_found": "❌ User not found",
+    "success": "✅ Success",
+    "cancelled": " Cancelled",
+    "timeout": "⏰ Timeout",
+    "permission_denied": "❌ You don't have permission to use this command",
+    "voice_channel_required": "❌ You need to be in a voice channel to use this command"
+  },
+  "economy": {
+    "balance": "💰 Balance",
+    "new_balance": "💳 New Balance",
+    "current_balance": "💳 Current Balance",
+    "net_worth": "💎 Net Worth",
+    "total_earned": "📈 Total Earned",
+    "total_spent": "📉 Total Spent",
+    "games_played": "🎮 Games Played",
+    "games_won": "🏆 Games Won",
+    "win_rate": "📊 Win Rate",
+    "account_age": "📅 Account Age",
+    "server_rank": "🏆 Server Rank",
+    "profile_title": "{username}'s Economy Profile",
+    "leaderboard_title": "🏆 Economy Leaderboard",
+    "insufficient_funds_message": "You need {needed} but only have {current}",
+    "transfer_success": "💸 Transfer successful!",
+    "transfer_message": "Successfully transferred {amount} to {username}",
+    "cannot_transfer_self": "❌ You cannot transfer money to yourself!",
+    "cannot_transfer_bot": "❌ You cannot transfer money to a bot!",
+    "gift_redeemed": "Gift Code Redeemed!"
+  },
+  "work": {
+    "title": "💼 Work Complete!",
+    "too_tired": "😴 Too tired!",
+    "cooldown_message": "You need to rest for **{time}** more seconds before working again.",
+    "earned": "💰 Earned",
+    "next_work": "Can work again in {time} seconds",
+    "messages": [
+      "You completed a delivery route!",
+      "You helped at the local restaurant!",
+      "You did some freelance programming!",
+      "You worked at a convenience store!",
+      "You helped move furniture!",
+      "You did some data entry work!"
+    ]
+  },
+  "crime": {
+    "title": "🏴‍☠️ Choose Your Crime",
+    "laying_low": "🚨 Laying Low!",
+    "cooldown_message": "Wait **{time}** more seconds before committing another crime.",
+    "selection_timeout": "⏰ Selection Timeout",
+    "timeout_message": "You took too long to decide. The opportunity passed!",
+    "cancelled_title": "❌ Crime Cancelled",
+    "cancelled_message": "You decided not to commit any crimes today. Smart choice!",
+    "choose_message": "Choose the type of crime you want to commit. Each type has different risks and rewards!",
+    "choose_wisely": "Choose wisely! Higher rewards come with higher risks.",
+    "types": {
+      "petty": {
+        "name": "Petty Theft",
+        "emoji": "🏪",
+        "description": "**Risk:** Low (30% failure)\n**Reward:** 1.5x bet\n**Fine:** 0.8x bet",
+        "success_messages": [
+          "You shoplifted successfully!",
+          "You pickpocketed a tourist!",
+          "You stole a wallet from a cafe!",
+          "You grabbed some expensive items!"
+        ],
+        "fail_messages": [
+          "Store security caught you!",
+          "The victim noticed and called police!",
+          "CCTV cameras spotted you!",
+          "A security guard was watching!"
+        ]
+      },
+      "bank": {
+        "name": "Bank Robbery",
+        "emoji": "🏦",
+        "description": "**Risk:** Medium (60% failure)\n**Reward:** 2x bet\n**Fine:** 1.2x bet",
+        "success_messages": [
+          "You successfully robbed the bank vault!",
+          "You hacked the ATM network!",
+          "You got away with the cash!",
+          "The heist went perfectly!"
+        ],
+        "fail_messages": [
+          "Bank security overwhelmed you!",
+          "Silent alarm triggered!",
+          "Police arrived too quickly!",
+          "The vault was too secure!"
+        ]
+      },
+      "heist": {
+        "name": "Diamond Heist",
+        "emoji": "💎",
+        "description": "**Risk:** High (80% failure)\n**Reward:** 3x bet\n**Fine:** 1.5x bet",
+        "success_messages": [
+          "You stole priceless diamonds!",
+          "The museum heist was successful!",
+          "You cracked the impossible safe!",
+          "The perfect crime was executed!"
+        ],
+        "fail_messages": [
+          "Laser security caught you!",
+          "Elite security forces arrived!",
+          "The alarm system was too advanced!",
+          "You triggered the lockdown!"
+        ]
+      },
+      "cyber": {
+        "name": "Cybercrime",
+        "emoji": "💻",
+        "description": "**Risk:** Medium (55% failure)\n**Reward:** 2.2x bet\n**Fine:** 1.1x bet",
+        "success_messages": [
+          "You successfully hacked into the crypto exchange!",
+          "You drained a corporate account!",
+          "You sold data on the dark web!",
+          "You breached a major database!"
+        ],
+        "fail_messages": [
+          "Cybersecurity traced your IP!",
+          "Your encryption was cracked!",
+          "FBI cyber division found you!",
+          "Firewall blocked your attack!"
+        ]
+      },
+      "gta": {
+        "name": "Car Theft",
+        "emoji": "🚗",
+        "description": "**Risk:** High (75% failure)\n**Reward:** 2.8x bet\n**Fine:** 1.4x bet",
+        "success_messages": [
+          "You stole a luxury sports car!",
+          "You hijacked an armored vehicle!",
+          "You took a rare vintage car!",
+          "You escaped in the stolen vehicle!"
+        ],
+        "fail_messages": [
+          "Police chase ended badly!",
+          "Car had GPS tracking!",
+          "You crashed while escaping!",
+          "Highway patrol surrounded you!"
+        ]
+      },
+      "launder": {
+        "name": "Money Laundering",
+        "emoji": "💸",
+        "description": "**Risk:** Low (40% failure)\n**Reward:** 1.8x bet\n**Fine:** 0.9x bet",
+        "success_messages": [
+          "You laundered money through shell companies!",
+          "You successfully cleaned dirty money!",
+          "You used offshore accounts perfectly!",
+          "You covered the money trail!"
+        ],
+        "fail_messages": [
+          "Financial investigators found anomalies!",
+          "Bank compliance caught the pattern!",
+          "Audit trail led back to you!",
+          "Suspicious activity was reported!"
+        ]
+      }
+    }
+  },
+  "gambling": {
+    "dice": {
+      "title": "🎲 Dice Roll Result!",
+      "result": "🎯 Result",
+      "amount": "💰 Amount",
+      "profit": "📈 Profit",
+      "loss": "📉 Loss",
+      "win": "🎉 You won!",
+      "lose": "💸 You lost!",
+      "unknown_direction": "❌ Unknown direction: {direction}. Use 'over' or 'under'",
+      "prediction_out_of_range": "❌ Prediction must be between {min} and {max}"
+    },
+    "rps": {
+      "title": "✂️ Rock Paper Scissors",
+      "choose_move": "Choose your move!",
+      "your_choice": "👤 Your Choice",
+      "bot_choice": "🤖 Bot Choice",
+      "result": "🎯 Result",
+      "bet_amount": "💰 Bet Amount",
+      "payout": "💵 Payout",
+      "win": "🎉 You won!",
+      "lose": "💸 You lost!",
+      "draw": "🤝 Draw!",
+      "outcome": "🔄 Outcome",
+      "bet_returned": "Bet Returned",
+      "play_again": "Play Again",
+      "double_bet": "Double Bet",
+      "cancel": "Cancel",
+      "timeout_message": "You took too long to choose. Game cancelled.",
+      "game_cancelled": "Rock Paper Scissors game has been cancelled.",
+      "choices": {
+        "rock": "Rock",
+        "paper": "Paper",
+        "scissors": "Scissors"
+      },
+      "rules": {
+        "rock": "Crushes Scissors",
+        "paper": "Covers Rock",
+        "scissors": "Cuts Paper"
+      },
+      "win_rule": "Win: 2x bet | Draw: Keep bet | Lose: Lose bet"
+    },
+    "baccarat": {
+      "title": "🃏 Baccarat",
+      "choose_bet": "Choose your bet type:",
+      "player_description": "Bet on Player hand\n**Payout:** 2:1 (Even money)",
+      "banker_description": "Bet on Banker hand\n**Payout:** 1.95:1 (5% commission)",
+      "tie_description": "Bet on Tie\n**Payout:** 9:1 (High risk)",
+      "choose_wisely": "Choose your bet wisely!",
+      "bet_player": "Bet Player",
+      "bet_banker": "Bet Banker",
+      "bet_tie": "Bet Tie",
+      "insufficient_funds": "💸 Insufficient funds!",
+      "cancelled_title": "❌ Game Cancelled",
+      "cancelled_message": "Baccarat game has been cancelled.",
+      "timeout_title": "⏰ Game Timeout",
+      "timeout_message": "Game has timed out. No bets were placed.",
+      "result_title": "🃏 Baccarat Result",
+      "win_message": "🎉 You won!",
+      "lose_message": "💸 You lost!"
+    },
+    "tomcuaca": {
+      "title": "🦐 Tôm Cua Cá (Shrimp Crab Fish)",
+      "choose_bet": "Choose which animal to bet on:",
+      "shrimp_description": "**Payout:** 6:1\nBet on Shrimp",
+      "crab_description": "**Payout:** 6:1\nBet on Crab",
+      "fish_description": "**Payout:** 6:1\nBet on Fish",
+      "rooster_description": "**Payout:** 6:1\nBet on Rooster",
+      "deer_description": "**Payout:** 6:1\nBet on Deer",
+      "gourd_description": "**Payout:** 6:1\nBet on Gourd",
+      "choose_wisely": "Choose your lucky animal!",
+      "bet_shrimp": "Bet Shrimp",
+      "bet_crab": "Bet Crab",
+      "bet_fish": "Bet Fish",
+      "bet_rooster": "Bet Rooster",
+      "bet_deer": "Bet Deer",
+      "bet_gourd": "Bet Gourd",
+      "insufficient_funds": "💸 Insufficient funds!",
+      "cancelled_title": "❌ Game Cancelled",
+      "cancelled_message": "Tôm Cua Cá game has been cancelled.",
+      "timeout_title": "⏰ Game Timeout",
+      "timeout_message": "Game has timed out. No bets were placed.",
+      "result_title": "🎲 Tôm Cua Cá Result",
+      "win_message": "🎉 You won!",
+      "lose_message": "💸 You lost!"
+    },
+    "taixiu": {
+      "title": "🎲 Tài Xỉu (Sicbo)",
+      "choose_bet": "Choose your bet:",
+      "how_to_play": "🎲 **How to play:** Roll 3 dice and predict the total sum!",
+      "payouts_info": "💰 **Payouts:** Tài/Xỉu = 2x bet | Triple = 180x bet | Specific numbers = 6x-60x bet",
+      "tai_description": "**Sum:** 11-17\n**Payout:** 2:1\nBet on high numbers",
+      "xiu_description": "**Sum:** 4-10\n**Payout:** 2:1\nBet on low numbers",
+      "triple_description": "**Sum:** 3 same dice\n**Payout:** 180:1\nVery rare but huge payout!",
+      "specific_description": "**Sum:** Pick exact total\n**Payout:** 6x-60x bet\nHigher risk, higher reward!",
+      "specific_numbers_label": "🎰 Specific Numbers",
+      "bet_amount_label": "💰 Bet Amount",
+      "your_balance_label": "💳 Your Balance",
+      "choose_wisely": "Choose wisely! Good luck!",
+      "insufficient_funds": "💸 Insufficient funds!",
+      "cancelled_title": "❌ Game Cancelled",
+      "cancelled_message": "Tài Xỉu game has been cancelled.",
+      "timeout_title": "⏰ Game Timeout",
+      "timeout_message": "Game has timed out. No bets were placed.",
+      "result_title": "🎲 Tài Xỉu Result",
+      "tai_win": "🔥 Tài wins!",
+      "tai_lose": "❄️ Tài loses!",
+      "xiu_win": "❄️ Xỉu wins!",
+      "xiu_lose": "🔥 Xỉu loses!",
+      "triple_win": "🎯 Triple wins! JACKPOT!",
+      "triple_lose": "💸 No triple!",
+      "number_win": "🎰 Number {number} wins!",
+      "number_lose": "💸 Number {number} loses!",
+      "dice_results": "🎲 Dice Results:",
+      "total": "Total:",
+      "your_bet": "🎯 Your Bet",
+      "dice_total": "🎲 Dice Total",
+      "bet_amount": "💰 Bet Amount",
+      "total_payout": "🎁 Total Payout",
+      "amount_lost": "📉 Amount Lost",
+      "net_profit": "📈 Net Profit/Loss",
+      "new_balance": "💳 New Balance",
+      "big_win": "🎊 **BIG WIN!** 🎊\n🎉 Congratulations on this amazing win! 🎉",
+      "tai_display": "🔥 Tài (Big) - Sum 11-17",
+      "xiu_display": "❄️ Xỉu (Small) - Sum 4-10",
+      "triple_display": "🎯 Triple - All same dice",
+      "number_display": "🎰 Number {number}",
+      "triple_indicator": "🎯 (TRIPLE!)"
+    }
+  },
+  "commands": {
+    "baccarat": {
+      "description": "Play Baccarat card game for money"
+    },
+    "crime": {
+      "description": "Commit a crime for money (risky!)"
+    },
+    "dice": {
+      "description": "Bet on dice roll (1-100)"
+    },
+    "language": {
+      "description": "Manage bot language settings"
+    },
+    "money": {
+      "description": "Check your balance and economy profile"
+    },
+    "ping": {
+      "description": "Replies with Pong!"
+    },
+    "rps": {
+      "description": "Play Rock Paper Scissors for money"
+    },
+    "transfer": {
+      "description": "Transfer money to another user"
+    },
+    "work": {
+      "description": "Work to earn some money"
+    },
+    "tomcuaca": {
+      "description": "Play Tôm Cua Cá (Vietnamese dice game) for money"
+    },
+    "taixiu": {
+      "description": "Play Tài Xỉu (Sicbo) dice game for money"
+    },
+    "help": {
+      "description": "Show all available commands and their usage",
+      "show_all_available_commands_and_their_usage": "Show all available commands and their usage",
+      "get_detailed_help_for_a_specific_command": "Get detailed help for a specific command"
+    },
+    "resume": {
+      "description": "Resume music playback if queue exists",
+      "resume_music_playback_if_queue_exists": "Resume music playback if queue exists"
+    },
+    "gift": {
+      "description": "Create a gift code using your balance",
+      "create_a_gift_code_using_your_balance": "Create a gift code using your balance",
+      "amount_to_put_in_the_gift_code": "Amount to put in the gift code",
+      "maximum_uses_default_1_max_10": "Maximum uses (default: 1, max: 10)",
+      "expiration_time_1h_6h_1d_3d_7d_default_24h": "Expiration time (1h, 6h, 1d, 3d, 7d - default: 24h)"
+    },
+    "redeem": {
+      "description": "Redeem a gift code for economy balance",
+      "redeem_a_gift_code_for_economy_balance": "Redeem a gift code for economy balance",
+      "the_gift_code_to_redeem": "The gift code to redeem"
+    },
+    "mygifts": {
+      "description": "View your created gift codes",
+      "view_your_created_gift_codes": "View your created gift codes"
+    },
+    "admingift": {
+      "description": "Admin commands for gift code management",
+      "admin_commands_for_gift_code_management": "Admin commands for gift code management",
+      "create_a_new_gift_code": "Create a new gift code",
+      "balance_amount_for_the_gift_code": "Balance amount for the gift code",
+      "maximum_uses_default_1": "Maximum uses (default: 1)",
+      "expiration_time_eg_7d_24h_1w": "Expiration time (e.g., 7d, 24h, 1w)",
+      "show_all_active_gift_codes": "Show all active gift codes",
+      "delete_a_specific_gift_code": "Delete a specific gift code",
+      "the_gift_code_to_delete": "The gift code to delete",
+      "show_gift_code_redemption_history": "Show gift code redemption history",
+      "show_gift_code_system_statistics": "Show gift code system statistics",
+      "clean_up_expired_gift_codes": "Clean up expired gift codes"
+    }
+  },
+  "music": {
+    "now_playing": "🎵 Now Playing",
+    "added_to_queue": "📝 Added to Queue",
+    "queue_title": "🎵 Music Queue",
+    "queue_empty": "Queue is empty. Use `/play` to add songs!",
+    "artist": "👤 Artist",
+    "bitrate": "🎧 Bitrate",
+    "requested_by": "👤 Requested by",
+    "position": "📍 Position",
+    "loop_mode": "🔁 Loop Mode",
+    "queue_length": "📝 Queue Length",
+    "status": "⏱️ Status",
+    "playing": "▶️ Playing",
+    "paused": "⏸️ Music paused!",
+    "resumed": "▶️ Music resumed!",
+    "skipped": "⏭️ Skipped to next song!",
+    "stopped": "⏹️ Music stopped and disconnected!",
+    "no_music_playing": " No music is currently playing!",
+    "no_queue_to_resume": " No songs in queue to resume. Use `/play` to add music first!",
+    "already_playing": "🎵 Music is already playing!",
+    "music_resumed": "Music Resumed",
+    "loop_modes": {
+      "off": "▶️ No Loop",
+      "single": "🔁 Loop Current",
+      "queue": "🔂 Loop Queue"
+    },
+    "skip_failed": "Failed to skip the current song.",
+    "stop_failed": "Failed to stop the music.",
+    "play_a_youtube_video_or_search_for_music": "Play a YouTube video or search for music",
+    "youtube_url_or_search_query": "YouTube URL or search query",
+    "auto_select_first_result_default_true": "Auto-select first result (default: true)",
+    "searching_for": "🔍 Searching for: **{query}**...",
+    "no_search_results_found": "❌ No search results found.",
+    "auto_selected": "🎵 Auto-Selected",
+    "channel": "👤 Channel",
+    "duration": "⏱️ Duration",
+    "search_query": "🔍 Search Query",
+    "auto_selected_footer": "Auto-selected first result • Use autoselect:false for manual selection",
+    "search_results": "🔍 Search Results",
+    "found_results_for": "Found {count} results for: **{query}**\n\nSelect a song from the menu below:",
+    "choose_song_to_play": "Choose a song to play",
+    "selection_expires_30_seconds": "Selection expires in 30 seconds",
+    "waiting_for_selection": "Waiting for selection...",
+    "song_selected": "🎵 Song Selected",
+    "views": "👀 Views",
+    "selected_by": "👤 Selected by",
+    "selection_timeout": "⏰ Selection Timeout",
+    "auto_selected_timeout": "Auto-selected: **{title}**",
+    "auto_selected_due_to_timeout": "Auto-selected due to timeout",
+    "could_not_find_or_process_song": "❌ Could not find or process the requested song.",
+    "error_processing_request": "❌ An error occurred while processing your request.",
+    "processing_direct_url": "Processing direct URL: {url}",
+    "no_audio_streams_available": "No audio streams available",
+    "no_valid_audio_formats_found": "No valid audio formats found",
+    "playlist_added": "📝 Playlist Added",
+    "album_added": "💿 Album Added",
+    "release_date": "📅 Release Date",
+    "author": "👤 Author",
+    "videos": "🎵 Videos",
+    "tracks": "🎵 Tracks",
+    "platform": "🌐 Platform"
+  }
+}

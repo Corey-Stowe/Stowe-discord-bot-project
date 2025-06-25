@@ -1,5 +1,6 @@
 const ytdl = require("@distube/ytdl-core");
 const ytpl = require("ytpl");
+const ytsr = require("youtube-sr").default;
 const fs = require("fs");
 
 class Youtube {
@@ -105,6 +106,56 @@ class Youtube {
         }
     }
 
+    async searchVideos(query, limit = 5) {
+        try {
+            console.log(`Searching YouTube for: ${query}`);
+            const results = await ytsr.search(query, { 
+                limit: limit,
+                type: 'video' // Only search for videos, not playlists or channels
+            });
+            
+            return results.map(video => ({
+                title: video.title,
+                url: video.url,
+                videoId: video.id,
+                author: video.channel?.name || 'Unknown',
+                thumbnail: video.thumbnail?.url || video.thumbnail?.displayThumbnailURL?.('maxresdefault'),
+                duration: video.duration,
+                durationFormatted: this.formatDuration(video.duration),
+                views: video.views,
+                uploadedAt: video.uploadedAt
+            }));
+        } catch (error) {
+            console.error("Error searching YouTube:", error);
+            throw error;
+        }
+    }
+
+    async getFirstSearchResult(query) {
+        try {
+            const results = await this.searchVideos(query, 1);
+            return results.length > 0 ? results[0] : null;
+        } catch (error) {
+            console.error("Error getting first search result:", error);
+            throw error;
+        }
+    }
+
+    formatDuration(milliseconds) {
+        if (!milliseconds) return '0:00';
+        
+        const totalSeconds = Math.floor(milliseconds / 1000);
+        const hours = Math.floor(totalSeconds / 3600);
+        const minutes = Math.floor((totalSeconds % 3600) / 60);
+        const seconds = totalSeconds % 60;
+        
+        if (hours > 0) {
+            return `${hours}:${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+        } else {
+            return `${minutes}:${seconds.toString().padStart(2, '0')}`;
+        }
+    }
+
     isPlaylistUrl(url) {
         return url && (
             url.includes('playlist?list=') || 
@@ -117,12 +168,15 @@ class Youtube {
         return url && ytdl.validateURL(url);
     }
 
+    isSearchQuery(input) {
+        // If it's not a URL, treat it as a search query
+        return !this.isVideoUrl(input) && !this.isPlaylistUrl(input);
+    }
+
     extractPlaylistId(url) {
         const match = url.match(/[?&]list=([^&]+)/);
         return match ? match[1] : null;
     }
 }
-
-
 
 module.exports = Youtube;

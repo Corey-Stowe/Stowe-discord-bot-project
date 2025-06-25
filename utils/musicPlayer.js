@@ -3,10 +3,22 @@ const Database = require('./database.js');
 const Youtube = require('../Plugins/Youtube.js');
 const AudioDownloader = require('./audioDownloader.js');
 const preset24h = require('./preset24h.js');
+const fs = require('fs');
+const path = require('path');
+
+// Cache configuration from environment variables
+const CACHE_CONFIG = {
+    maxSizeMB: parseInt(process.env.CACHE_MAX_SIZE_MB) || 500, // Default 500 MB
+    cleanupCountPerBatch: parseInt(process.env.CACHE_CLEANUP_COUNT) || 5, // Delete 5 files per cleanup
+    autoCleanupEnabled: process.env.CACHE_AUTO_CLEANUP !== 'false', // Default enabled
+    downloadDir: path.join(__dirname, '../downloads')
+};
+
+// Store players for each guild
+const players = new Map();
 
 class MusicPlayer {
     constructor() {
-        this.players = new Map();
         this.db = new Database();
         this.youtube = new Youtube();
         this.downloader = new AudioDownloader();
@@ -14,11 +26,11 @@ class MusicPlayer {
     }
 
     getPlayer(guildId) {
-        return this.players.get(guildId);
+        return players.get(guildId) || null;
     }
 
     setPlayer(guildId, player, connection) {
-        this.players.set(guildId, { player, connection, currentSong: null, retryCount: 0 });
+        players.set(guildId, { player, connection, currentSong: null, retryCount: 0 });
         
         // Monitor connection state
         connection.on(VoiceConnectionStatus.Disconnected, async () => {
@@ -31,19 +43,19 @@ class MusicPlayer {
                 
                 if (connection.state.status !== VoiceConnectionStatus.Ready) {
                     console.log('Connection failed to reconnect, cleaning up');
-                    this.players.delete(guildId);
+                    players.delete(guildId);
                     connection.destroy();
                 }
             } catch (error) {
                 console.error('Connection error:', error);
-                this.players.delete(guildId);
+                players.delete(guildId);
                 connection.destroy();
             }
         });
 
         connection.on(VoiceConnectionStatus.Destroyed, () => {
             console.log('Voice connection destroyed');
-            this.players.delete(guildId);
+            players.delete(guildId);
         });
     }
 
@@ -73,7 +85,7 @@ class MusicPlayer {
     }
 
     async playNext(guildId) {
-        const playerData = this.players.get(guildId);
+        const playerData = players.get(guildId);
         if (!playerData) return;
 
         try {
@@ -144,7 +156,7 @@ class MusicPlayer {
     }
 
     async playPresetSong(guildId, presetSong) {
-        const playerData = this.players.get(guildId);
+        const playerData = players.get(guildId);
         if (!playerData) return;
 
         try {
@@ -174,7 +186,7 @@ class MusicPlayer {
     async start24hMode(guildId, channelId) {
         try {
             // Check if already connected
-            if (this.players.has(guildId)) {
+            if (players.has(guildId)) {
                 return { success: false, message: 'Bot is already playing music' };
             }
 
@@ -200,7 +212,7 @@ class MusicPlayer {
             await this.db.set24hMode(guildId, false);
             
             // Clear queue and disconnect if currently playing preset
-            const playerData = this.players.get(guildId);
+            const playerData = players.get(guildId);
             if (playerData && playerData.currentSong && playerData.currentSong.isPreset) {
                 await this.db.clearQueue(guildId);
                 this.disconnect(guildId);
@@ -217,7 +229,7 @@ class MusicPlayer {
         try {
             const mode24h = await this.db.get24hMode(guildId);
             const playlistInfo = this.preset24h.getPlaylistInfo();
-            const playerData = this.players.get(guildId);
+            const playerData = players.get(guildId);
             
             return {
                 enabled: mode24h.enabled,
@@ -233,35 +245,109 @@ class MusicPlayer {
     }
 
     async playSong(guildId, song, isRetry = false) {
-        const playerData = this.players.get(guildId);
+        const playerData = players.get(guildId);
         if (!playerData) return;
 
         try {
             console.log(`Playing song: ${song.title}`);
-            
-            // If song doesn't have audioUrl (from playlist), resolve it now
+              // If song doesn't have audioUrl (from playlist), resolve it now
             if (!song.audioUrl && song.originalUrl) {
                 console.log('Resolving audio URL for playlist song...');
-                try {
-                    const Youtube = require('../Plugins/Youtube.js');
-                    const youtube = new Youtube();
-                    const videoInfo = await youtube.getYoutubeInfo(song.originalUrl);
-                    
-                    if (videoInfo.streamingData && videoInfo.streamingData.adaptiveFormats) {
-                        const audioFormats = videoInfo.streamingData.adaptiveFormats.filter(format => 
-                            format.mimeType && format.mimeType.includes('audio') && 
-                            format.url && format.contentLength
-                        );
+                try {                    // Detect platform from URL and use appropriate plugin
+                    if (this.isSoundCloudUrl(song.originalUrl)) {
+                        console.log('Resolving SoundCloud audio stream...');
+                        const SoundCloud = require('../Plugins/SoundCloud.js');
+                        const soundcloud = new SoundCloud();
                         
-                        if (audioFormats.length > 0) {
-                            const sortedFormats = audioFormats.sort((a, b) => {
-                                if (a.mimeType.includes('mp4') && !b.mimeType.includes('mp4')) return -1;
-                                if (!a.mimeType.includes('mp4') && b.mimeType.includes('mp4')) return 1;
-                                return (b.averageBitrate || 0) - (a.averageBitrate || 0);
-                            });
+                        // For SoundCloud, we get a stream directly, not a URL
+                        // We'll handle this differently - mark it as ready and use originalUrl
+                        try {
+                            // Test if we can get the stream (but don't store it yet)
+                            const testStream = await soundcloud.getStreamUrl(song.originalUrl);
+                            if (testStream) {
+                                // Mark as ready for streaming
+                                song.audioUrl = 'SOUNDCLOUD_STREAM_READY';
+                                song.streamReady = true;
+                                console.log('SoundCloud stream is available and ready');
+                            }
+                        } catch (streamError) {
+                            console.error('SoundCloud stream test failed:', streamError);
+                            throw streamError;
+                        }
+                    } else if (this.isYouTubeUrl(song.originalUrl)) {
+                        console.log('Resolving YouTube audio URL...');
+                        const Youtube = require('../Plugins/Youtube.js');
+                        const youtube = new Youtube();
+                        const videoInfo = await youtube.getYoutubeInfo(song.originalUrl);
+                        
+                        if (videoInfo.streamingData && videoInfo.streamingData.adaptiveFormats) {
+                            const audioFormats = videoInfo.streamingData.adaptiveFormats.filter(format => 
+                                format.mimeType && format.mimeType.includes('audio') && 
+                                format.url && format.contentLength
+                            );
                             
-                            song.audioUrl = sortedFormats[0].url;
-                            song.quality = sortedFormats[0].audioQuality;
+                            if (audioFormats.length > 0) {
+                                const sortedFormats = audioFormats.sort((a, b) => {
+                                    if (a.mimeType.includes('mp4') && !b.mimeType.includes('mp4')) return -1;
+                                    if (!a.mimeType.includes('mp4') && b.mimeType.includes('mp4')) return 1;
+                                    return (b.averageBitrate || 0) - (a.averageBitrate || 0);
+                                });
+                                
+                                song.audioUrl = sortedFormats[0].url;
+                                song.quality = sortedFormats[0].audioQuality;
+                            }
+                        }
+                    } else if (this.isSpotifyUrl(song.originalUrl)) {
+                        console.log('Resolving Spotify track via fallback...');
+                        // For Spotify tracks, we need to search for the song on other platforms
+                        const searchQuery = song.searchQuery || `${song.author} ${song.title}`;
+                        
+                        try {
+                            // Try YouTube first
+                            const Youtube = require('../Plugins/Youtube.js');
+                            const youtube = new Youtube();
+                            const youtubeResults = await youtube.searchVideos(searchQuery, 1);
+                            
+                            if (youtubeResults.length > 0) {
+                                const videoInfo = await youtube.getYoutubeInfo(youtubeResults[0].url);
+                                const audioFormats = videoInfo.streamingData.adaptiveFormats.filter(format => 
+                                    format.mimeType && format.mimeType.includes('audio')
+                                );
+                                
+                                if (audioFormats.length > 0) {
+                                    song.audioUrl = audioFormats[0].url;
+                                    song.fallbackUrl = youtubeResults[0].url;
+                                }
+                            }
+                        } catch (ytError) {
+                            console.warn('YouTube fallback failed for Spotify track, trying SoundCloud...');
+                            try {
+                                const SoundCloud = require('../Plugins/SoundCloud.js');
+                                const soundcloud = new SoundCloud();
+                                const scResults = await soundcloud.search(searchQuery, 1);
+                                
+                                if (scResults.length > 0) {
+                                    song.audioUrl = await soundcloud.getStreamUrl(scResults[0].url);
+                                    song.fallbackUrl = scResults[0].url;
+                                }
+                            } catch (scError) {
+                                console.error('Both YouTube and SoundCloud fallbacks failed for Spotify track:', scError);
+                            }
+                        }
+                    } else {
+                        console.warn('Unknown URL format, attempting YouTube resolution as fallback...');
+                        const Youtube = require('../Plugins/Youtube.js');
+                        const youtube = new Youtube();
+                        const videoInfo = await youtube.getYoutubeInfo(song.originalUrl);
+                        
+                        if (videoInfo.streamingData && videoInfo.streamingData.adaptiveFormats) {
+                            const audioFormats = videoInfo.streamingData.adaptiveFormats.filter(format => 
+                                format.mimeType && format.mimeType.includes('audio')
+                            );
+                            
+                            if (audioFormats.length > 0) {
+                                song.audioUrl = audioFormats[0].url;
+                            }
                         }
                     }
                 } catch (error) {
@@ -269,17 +355,28 @@ class MusicPlayer {
                     await this.playNext(guildId);
                     return;
                 }
-            }
-
-            // Try to use downloaded file first
+            }            // Handle different audio source types
             let audioSource = null;
             
-            if (song.videoId && this.downloader && this.downloader.fileExists(song.videoId)) {
+            // Special handling for SoundCloud streams
+            if (song.platform === 'soundcloud' && (song.audioUrl === 'SOUNDCLOUD_STREAM_READY' || song.streamReady)) {
+                console.log('Using SoundCloud stream for:', song.title);
+                const SoundCloud = require('../Plugins/SoundCloud.js');
+                const soundcloud = new SoundCloud();
+                try {
+                    audioSource = await soundcloud.getStreamUrl(song.originalUrl);
+                    console.log('SoundCloud stream obtained successfully');
+                } catch (streamError) {
+                    console.error('Failed to get SoundCloud stream:', streamError);
+                    await this.playNext(guildId);
+                    return;
+                }
+            } else if (song.videoId && this.downloader && this.downloader.fileExists(song.videoId)) {
                 // Use downloaded file
                 audioSource = this.downloader.getFilePath(song.videoId);
                 console.log(`Using downloaded file: ${song.videoId}`);
-            } else if (song.videoId && song.originalUrl && this.downloader) {
-                // Download the audio file
+            } else if (song.videoId && song.originalUrl && this.downloader && !this.isSoundCloudUrl(song.originalUrl)) {
+                // Download the audio file (only for YouTube, not SoundCloud)
                 try {
                     console.log(`Downloading audio for: ${song.title}`);
                     audioSource = await this.downloader.downloadAudio(song.originalUrl, song.videoId);
@@ -287,9 +384,25 @@ class MusicPlayer {
                     console.error('Download failed, falling back to stream:', downloadError);
                     audioSource = song.audioUrl;
                 }
-            } else {
-                // Fallback to stream URL
+            } else if (song.audioUrl && song.audioUrl !== 'SOUNDCLOUD_STREAM_READY') {
+                // Use direct audio URL (for YouTube and other platforms)
                 audioSource = song.audioUrl;
+            } else if (this.isSoundCloudUrl(song.originalUrl)) {
+                // Fallback SoundCloud stream resolution
+                console.log('Fallback SoundCloud stream resolution for:', song.title);
+                const SoundCloud = require('../Plugins/SoundCloud.js');
+                const soundcloud = new SoundCloud();
+                try {
+                    audioSource = await soundcloud.getStreamUrl(song.originalUrl);
+                } catch (streamError) {
+                    console.error('Fallback SoundCloud stream failed:', streamError);
+                    await this.playNext(guildId);
+                    return;
+                }
+            } else {
+                console.error('No valid audio source found');
+                await this.playNext(guildId);
+                return;
             }
 
             if (!audioSource) {
@@ -349,7 +462,7 @@ class MusicPlayer {
     }
 
     async skip(guildId) {
-        const playerData = this.players.get(guildId);
+        const playerData = players.get(guildId);
         if (!playerData) return false;
 
         playerData.player.stop();
@@ -357,18 +470,18 @@ class MusicPlayer {
     }
 
     async stop(guildId) {
-        const playerData = this.players.get(guildId);
+        const playerData = players.get(guildId);
         if (!playerData) return false;
 
         await this.db.clearQueue(guildId);
         playerData.player.stop();
         playerData.connection.destroy();
-        this.players.delete(guildId);
+        players.delete(guildId);
         return true;
     }
 
     pause(guildId) {
-        const playerData = this.players.get(guildId);
+        const playerData = players.get(guildId);
         if (playerData && playerData.player) {
             playerData.player.pause();
             return true;
@@ -377,7 +490,7 @@ class MusicPlayer {
     }
 
     resume(guildId) {
-        const playerData = this.players.get(guildId);
+        const playerData = players.get(guildId);
         if (playerData && playerData.player) {
             playerData.player.unpause();
             return true;
@@ -386,7 +499,7 @@ class MusicPlayer {
     }
 
     disconnect(guildId) {
-        const playerData = this.players.get(guildId);
+        const playerData = players.get(guildId);
         if (playerData) {
             try {
                 if (playerData.connection) {
@@ -395,7 +508,7 @@ class MusicPlayer {
                 if (playerData.player) {
                     playerData.player.stop();
                 }
-                this.players.delete(guildId);
+                players.delete(guildId);
                 console.log(`Disconnected from guild: ${guildId}`);
             } catch (error) {
                 console.error('Error disconnecting:', error);
@@ -404,19 +517,19 @@ class MusicPlayer {
     }
 
     isPlaying(guildId) {
-        const playerData = this.players.get(guildId);
+        const playerData = players.get(guildId);
         return playerData && playerData.player && playerData.player.state.status === AudioPlayerStatus.Playing;
     }
 
     isPaused(guildId) {
-        const playerData = this.players.get(guildId);
+        const playerData = players.get(guildId);
         return playerData && playerData.player && playerData.player.state.status === AudioPlayerStatus.Paused;
     }
 
     setupPlayerEvents(guildId, player) {
         player.on(AudioPlayerStatus.Playing, () => {
             console.log('Audio player started playing');
-            const playerData = this.players.get(guildId);
+            const playerData = players.get(guildId);
             if (playerData) {
                 playerData.retryCount = 0; // Reset retry count on successful playback
             }
@@ -426,7 +539,7 @@ class MusicPlayer {
             console.log('Audio player is idle, playing next song');
             // Add delay to prevent rapid switching
             setTimeout(() => {
-                if (this.players.has(guildId)) {
+                if (players.has(guildId)) {
                     this.playNext(guildId);
                 }
             }, 1500);
@@ -438,7 +551,7 @@ class MusicPlayer {
 
         player.on('error', async (error) => {
             console.error('Audio player error:', error.message);
-            const playerData = this.players.get(guildId);
+            const playerData = players.get(guildId);
             
             if (playerData && playerData.currentSong) {
                 // Delete corrupted file if it exists
@@ -475,6 +588,607 @@ class MusicPlayer {
             sizeMB: (size / (1024 * 1024)).toFixed(2)
         };
     }
+
+    // URL detection helper methods
+    isYouTubeUrl(url) {
+        return url && (
+            url.includes('youtube.com/') ||
+            url.includes('youtu.be/') ||
+            url.includes('m.youtube.com/')
+        );
+    }
+
+    isSoundCloudUrl(url) {
+        return url && (
+            url.includes('soundcloud.com/') ||
+            url.includes('snd.sc/')
+        );
+    }
+
+    isSpotifyUrl(url) {
+        return url && (
+            url.includes('spotify.com/') ||
+            url.includes('open.spotify.com/') ||
+            url.includes('spotify:')
+        );
+    }
 }
 
-module.exports = new MusicPlayer();
+// Check cache size and perform cleanup if necessary
+function checkCacheSizeAndCleanup() {
+    if (!CACHE_CONFIG.autoCleanupEnabled) {
+        return { cleaned: false, reason: 'Auto-cleanup disabled' };
+    }
+
+    try {
+        const stats = getDownloadStats();
+        const currentSizeMB = parseFloat(stats.sizeMB) || 0;
+        
+        if (currentSizeMB > CACHE_CONFIG.maxSizeMB) {
+            console.log(`Cache size (${currentSizeMB} MB) exceeds limit (${CACHE_CONFIG.maxSizeMB} MB). Starting cleanup...`);
+            
+            // Get all download files with their stats
+            const downloadFiles = getDownloadFilesWithStats();
+            
+            if (downloadFiles.length === 0) {
+                return { cleaned: false, reason: 'No files to clean' };
+            }
+
+            // Sort by modification time (oldest first)
+            downloadFiles.sort((a, b) => a.mtime - b.mtime);
+            
+            // Delete the oldest files
+            const filesToDelete = downloadFiles.slice(0, CACHE_CONFIG.cleanupCountPerBatch);
+            let deletedCount = 0;
+            let freedSpaceMB = 0;
+
+            for (const file of filesToDelete) {
+                try {
+                    const fileSizeMB = file.size / (1024 * 1024);
+                    fs.unlinkSync(file.path);
+                    deletedCount++;
+                    freedSpaceMB += fileSizeMB;
+                    console.log(`Deleted old download: ${file.name} (${fileSizeMB.toFixed(2)} MB)`);
+                } catch (error) {
+                    console.error(`Failed to delete ${file.name}:`, error);
+                }
+            }
+
+            return {
+                cleaned: true,
+                deletedCount,
+                freedSpaceMB: freedSpaceMB.toFixed(2),
+                newSizeMB: (currentSizeMB - freedSpaceMB).toFixed(2),
+                reason: `Cleaned ${deletedCount} oldest files`
+            };
+        }
+
+        return { cleaned: false, reason: 'Cache size within limit' };
+    } catch (error) {
+        console.error('Error during cache size check:', error);
+        return { cleaned: false, reason: 'Error during cleanup', error: error.message };
+    }
+}
+
+function getDownloadFilesWithStats() {
+    if (!fs.existsSync(CACHE_CONFIG.downloadDir)) {
+        return [];
+    }
+
+    const files = [];
+    try {
+        const fileNames = fs.readdirSync(CACHE_CONFIG.downloadDir);
+        
+        for (const fileName of fileNames) {
+            const filePath = path.join(CACHE_CONFIG.downloadDir, fileName);
+            try {
+                const stats = fs.statSync(filePath);
+                if (stats.isFile()) {
+                    files.push({
+                        name: fileName,
+                        path: filePath,
+                        size: stats.size,
+                        mtime: stats.mtime.getTime(),
+                        created: stats.birthtime.getTime()
+                    });
+                }
+            } catch (error) {
+                console.error(`Error getting stats for ${fileName}:`, error);
+            }
+        }
+    } catch (error) {
+        console.error('Error reading download directory:', error);
+    }
+
+    return files;
+}
+
+function getDownloadStats() {
+    if (!fs.existsSync(CACHE_CONFIG.downloadDir)) {
+        return { sizeMB: '0', count: 0, files: [] };
+    }
+
+    try {
+        const files = getDownloadFilesWithStats();
+        const totalSize = files.reduce((sum, file) => sum + file.size, 0);
+        const sizeMB = (totalSize / (1024 * 1024)).toFixed(2);
+
+        return {
+            sizeMB,
+            count: files.length,
+            files: files.map(f => ({
+                name: f.name,
+                sizeMB: (f.size / (1024 * 1024)).toFixed(2),
+                age: Math.floor((Date.now() - f.mtime) / (1000 * 60 * 60)) // hours
+            })),
+            config: {
+                maxSizeMB: CACHE_CONFIG.maxSizeMB,
+                autoCleanupEnabled: CACHE_CONFIG.autoCleanupEnabled,
+                cleanupCount: CACHE_CONFIG.cleanupCountPerBatch
+            }
+        };
+    } catch (error) {
+        console.error('Error getting download stats:', error);
+        return { sizeMB: '0', count: 0, files: [], error: error.message };
+    }
+}
+
+// Enhanced cleanup function with size-based options
+function cleanDownloads(forceAll = false, maxAge = 24) {
+    if (!fs.existsSync(CACHE_CONFIG.downloadDir)) {
+        return 0;
+    }
+
+    try {
+        const files = getDownloadFilesWithStats();
+        let deletedCount = 0;
+
+        if (forceAll) {
+            // Delete all files
+            for (const file of files) {
+                try {
+                    fs.unlinkSync(file.path);
+                    deletedCount++;
+                } catch (error) {
+                    console.error(`Failed to delete ${file.name}:`, error);
+                }
+            }
+        } else {
+            // Delete files older than maxAge hours
+            const maxAgeMs = maxAge * 60 * 60 * 1000;
+            const now = Date.now();
+
+            for (const file of files) {
+                if (now - file.mtime > maxAgeMs) {
+                    try {
+                        fs.unlinkSync(file.path);
+                        deletedCount++;
+                        console.log(`Deleted old download: ${file.name} (${Math.floor((now - file.mtime) / (1000 * 60 * 60))}h old)`);
+                    } catch (error) {
+                        console.error(`Failed to delete ${file.name}:`, error);
+                    }
+                }
+            }
+        }
+
+        return deletedCount;
+    } catch (error) {
+        console.error('Error cleaning downloads:', error);
+        return 0;
+    }
+}
+
+function getCacheConfig() {
+    return CACHE_CONFIG;
+}
+
+// Hook into music download/playback to check cache size
+function onFileDownloaded(filePath) {
+    // Check cache size after each download
+    const cleanupResult = checkCacheSizeAndCleanup();
+    
+    if (cleanupResult.cleaned) {
+        console.log(`Auto-cleanup completed: ${cleanupResult.reason}. Freed ${cleanupResult.freedSpaceMB} MB`);
+    }
+    
+    return cleanupResult;
+}
+
+function getCurrentSong(guildId) {
+    const playerData = players.get(guildId);
+    return playerData?.currentSong || null;
+}
+
+function isPlaying(guildId) {
+    const playerData = players.get(guildId);
+    return playerData?.isPlaying || false;
+}
+
+function isPaused(guildId) {
+    const playerData = players.get(guildId);
+    return playerData?.isPaused || false;
+}
+
+function pause(guildId) {
+    const playerData = players.get(guildId);
+    if (playerData?.player) {
+        playerData.player.pause();
+        playerData.isPaused = true;
+        playerData.isPlaying = false;
+        return true;
+    }
+    return false;
+}
+
+function resume(guildId) {
+    const playerData = players.get(guildId);
+    if (playerData?.player) {
+        playerData.player.unpause();
+        playerData.isPaused = false;
+        playerData.isPlaying = true;
+        return true;
+    }
+    return false;
+}
+
+function disconnect(guildId) {
+    const playerData = players.get(guildId);
+    if (playerData) {
+        if (playerData.player) {
+            playerData.player.stop();
+        }
+        if (playerData.connection) {
+            playerData.connection.destroy();
+        }
+        players.delete(guildId);
+        return true;
+    }
+    return false;
+}
+
+function setupPlayerEvents(guildId, player) {
+    const playerData = players.get(guildId);
+    if (!playerData) return;
+
+    player.on('stateChange', (oldState, newState) => {
+        if (newState.status === 'idle') {
+            playerData.isPlaying = false;
+            playerData.isPaused = false;
+            playerData.currentSong = null;
+            // Auto-play next song if queue exists
+            playNext(guildId);
+        } else if (newState.status === 'playing') {
+            playerData.isPlaying = true;
+            playerData.isPaused = false;
+        } else if (newState.status === 'paused') {
+            playerData.isPlaying = false;
+            playerData.isPaused = true;
+        }
+    });
+
+    player.on('error', (error) => {
+        console.error(`Player error in guild ${guildId}:`, error);
+        playerData.isPlaying = false;
+        playerData.isPaused = false;
+        playerData.currentSong = null;
+    });
+}
+
+async function playNext(guildId) {
+    // This would need to be implemented based on your queue system
+    // For now, just a placeholder
+    const playerData = players.get(guildId);
+    if (playerData) {
+        console.log(`Playing next song for guild ${guildId}`);
+        // Implementation would get next song from queue and play it
+    }
+}
+
+async function get24hStatus(guildId) {
+    // Read guild settings to get 24/7 status
+    try {
+        const fs = require('fs');
+        const path = require('path');
+        const settingsPath = path.join(__dirname, '../data/guild_settings.json');
+        
+        if (fs.existsSync(settingsPath)) {
+            const settings = JSON.parse(fs.readFileSync(settingsPath, 'utf8'));
+            const guildSettings = settings[guildId] || {};
+            
+            const playerData = players.get(guildId);
+            
+            return {
+                enabled: guildSettings.mode_24h || false,
+                channelId: guildSettings.channel_24h || null,
+                isPlaying: playerData?.isPlaying || false,
+                currentSong: playerData?.currentSong || null,
+                playlistInfo: {
+                    totalSongs: 0,
+                    shuffleMode: false
+                }
+            };
+        }
+    } catch (error) {
+        console.error('Error getting 24/7 status:', error);
+    }
+    
+    return {
+        enabled: false,
+        channelId: null,
+        isPlaying: false,
+        currentSong: null,
+        playlistInfo: {
+            totalSongs: 0,
+            shuffleMode: false
+        }
+    };
+}
+
+async function start24hMode(guildId, channelId) {
+    try {
+        const fs = require('fs');
+        const path = require('path');
+        const settingsPath = path.join(__dirname, '../data/guild_settings.json');
+        
+        let settings = {};
+        if (fs.existsSync(settingsPath)) {
+            settings = JSON.parse(fs.readFileSync(settingsPath, 'utf8'));
+        }
+        
+        settings[guildId] = {
+            ...settings[guildId],
+            mode_24h: true,
+            channel_24h: channelId,
+            updated_at: Date.now()
+        };
+        
+        fs.writeFileSync(settingsPath, JSON.stringify(settings, null, 2));
+        
+        return { success: true, message: '24/7 mode enabled' };
+    } catch (error) {
+        console.error('Error starting 24/7 mode:', error);
+        return { success: false, message: 'Failed to enable 24/7 mode' };
+    }
+}
+
+async function stop24hMode(guildId) {
+    try {
+        const fs = require('fs');
+        const path = require('path');
+        const settingsPath = path.join(__dirname, '../data/guild_settings.json');
+        
+        let settings = {};
+        if (fs.existsSync(settingsPath)) {
+            settings = JSON.parse(fs.readFileSync(settingsPath, 'utf8'));
+        }
+        
+        settings[guildId] = {
+            ...settings[guildId],
+            mode_24h: false,
+            channel_24h: null,
+            updated_at: Date.now()
+        };
+        
+        fs.writeFileSync(settingsPath, JSON.stringify(settings, null, 2));
+        
+        // Disconnect player if exists
+        disconnect(guildId);
+        
+        return { success: true, message: '24/7 mode disabled' };
+    } catch (error) {
+        console.error('Error stopping 24/7 mode:', error);
+        return { success: false, message: 'Failed to disable 24/7 mode' };
+    }
+}
+
+// Check cache size and perform cleanup if necessary
+function checkCacheSizeAndCleanup() {
+    if (!CACHE_CONFIG.autoCleanupEnabled) {
+        return { cleaned: false, reason: 'Auto-cleanup disabled' };
+    }
+
+    try {
+        const stats = getDownloadStats();
+        const currentSizeMB = parseFloat(stats.sizeMB) || 0;
+        
+        if (currentSizeMB > CACHE_CONFIG.maxSizeMB) {
+            console.log(`Cache size (${currentSizeMB} MB) exceeds limit (${CACHE_CONFIG.maxSizeMB} MB). Starting cleanup...`);
+            
+            // Get all download files with their stats
+            const downloadFiles = getDownloadFilesWithStats();
+            
+            if (downloadFiles.length === 0) {
+                return { cleaned: false, reason: 'No files to clean' };
+            }
+
+            // Sort by modification time (oldest first)
+            downloadFiles.sort((a, b) => a.mtime - b.mtime);
+            
+            // Delete the oldest files
+            const filesToDelete = downloadFiles.slice(0, CACHE_CONFIG.cleanupCountPerBatch);
+            let deletedCount = 0;
+            let freedSpaceMB = 0;
+
+            for (const file of filesToDelete) {
+                try {
+                    const fileSizeMB = file.size / (1024 * 1024);
+                    fs.unlinkSync(file.path);
+                    deletedCount++;
+                    freedSpaceMB += fileSizeMB;
+                    console.log(`Deleted old download: ${file.name} (${fileSizeMB.toFixed(2)} MB)`);
+                } catch (error) {
+                    console.error(`Failed to delete ${file.name}:`, error);
+                }
+            }
+
+            return {
+                cleaned: true,
+                deletedCount,
+                freedSpaceMB: freedSpaceMB.toFixed(2),
+                newSizeMB: (currentSizeMB - freedSpaceMB).toFixed(2),
+                reason: `Cleaned ${deletedCount} oldest files`
+            };
+        }
+
+        return { cleaned: false, reason: 'Cache size within limit' };
+    } catch (error) {
+        console.error('Error during cache size check:', error);
+        return { cleaned: false, reason: 'Error during cleanup', error: error.message };
+    }
+}
+
+function getDownloadFilesWithStats() {
+    if (!fs.existsSync(CACHE_CONFIG.downloadDir)) {
+        return [];
+    }
+
+    const files = [];
+    try {
+        const fileNames = fs.readdirSync(CACHE_CONFIG.downloadDir);
+        
+        for (const fileName of fileNames) {
+            const filePath = path.join(CACHE_CONFIG.downloadDir, fileName);
+            try {
+                const stats = fs.statSync(filePath);
+                if (stats.isFile()) {
+                    files.push({
+                        name: fileName,
+                        path: filePath,
+                        size: stats.size,
+                        mtime: stats.mtime.getTime(),
+                        created: stats.birthtime.getTime()
+                    });
+                }
+            } catch (error) {
+                console.error(`Error getting stats for ${fileName}:`, error);
+            }
+        }
+    } catch (error) {
+        console.error('Error reading download directory:', error);
+    }
+
+    return files;
+}
+
+function getDownloadStats() {
+    if (!fs.existsSync(CACHE_CONFIG.downloadDir)) {
+        return { sizeMB: '0', count: 0, files: [] };
+    }
+
+    try {
+        const files = getDownloadFilesWithStats();
+        const totalSize = files.reduce((sum, file) => sum + file.size, 0);
+        const sizeMB = (totalSize / (1024 * 1024)).toFixed(2);
+
+        return {
+            sizeMB,
+            count: files.length,
+            files: files.map(f => ({
+                name: f.name,
+                sizeMB: (f.size / (1024 * 1024)).toFixed(2),
+                age: Math.floor((Date.now() - f.mtime) / (1000 * 60 * 60)) // hours
+            })),
+            config: {
+                maxSizeMB: CACHE_CONFIG.maxSizeMB,
+                autoCleanupEnabled: CACHE_CONFIG.autoCleanupEnabled,
+                cleanupCount: CACHE_CONFIG.cleanupCountPerBatch
+            }
+        };
+    } catch (error) {
+        console.error('Error getting download stats:', error);
+        return { sizeMB: '0', count: 0, files: [], error: error.message };
+    }
+}
+
+// Enhanced cleanup function with size-based options
+function cleanDownloads(forceAll = false, maxAge = 24) {
+    if (!fs.existsSync(CACHE_CONFIG.downloadDir)) {
+        return 0;
+    }
+
+    try {
+        const files = getDownloadFilesWithStats();
+        let deletedCount = 0;
+
+        if (forceAll) {
+            // Delete all files
+            for (const file of files) {
+                try {
+                    fs.unlinkSync(file.path);
+                    deletedCount++;
+                } catch (error) {
+                    console.error(`Failed to delete ${file.name}:`, error);
+                }
+            }
+        } else {
+            // Delete files older than maxAge hours
+            const maxAgeMs = maxAge * 60 * 60 * 1000;
+            const now = Date.now();
+
+            for (const file of files) {
+                if (now - file.mtime > maxAgeMs) {
+                    try {
+                        fs.unlinkSync(file.path);
+                        deletedCount++;
+                        console.log(`Deleted old download: ${file.name} (${Math.floor((now - file.mtime) / (1000 * 60 * 60))}h old)`);
+                    } catch (error) {
+                        console.error(`Failed to delete ${file.name}:`, error);
+                    }
+                }
+            }
+        }
+
+        return deletedCount;
+    } catch (error) {
+        console.error('Error cleaning downloads:', error);
+        return 0;
+    }
+}
+
+function getCacheConfig() {
+    return CACHE_CONFIG;
+}
+
+// Hook into music download/playback to check cache size
+function onFileDownloaded(filePath) {
+    // Check cache size after each download
+    const cleanupResult = checkCacheSizeAndCleanup();
+    
+    if (cleanupResult.cleaned) {
+        console.log(`Auto-cleanup completed: ${cleanupResult.reason}. Freed ${cleanupResult.freedSpaceMB} MB`);
+    }
+    
+    return cleanupResult;
+}
+
+const musicPlayer = new MusicPlayer();
+
+// Export the instance methods and standalone functions
+module.exports = {
+    // Player management - use instance methods
+    getPlayer: (guildId) => musicPlayer.getPlayer(guildId),
+    setPlayer: (guildId, player, connection) => musicPlayer.setPlayer(guildId, player, connection),
+    getCurrentSong: (guildId) => getCurrentSong(guildId),
+    isPlaying: (guildId) => musicPlayer.isPlaying(guildId),
+    isPaused: (guildId) => musicPlayer.isPaused(guildId),
+    pause: (guildId) => musicPlayer.pause(guildId),
+    resume: (guildId) => musicPlayer.resume(guildId),
+    skip: (guildId) => musicPlayer.skip(guildId),
+    stop: (guildId) => musicPlayer.stop(guildId),
+    disconnect: (guildId) => musicPlayer.disconnect(guildId),
+    setupPlayerEvents: (guildId, player) => musicPlayer.setupPlayerEvents(guildId, player),
+    playNext: (guildId) => musicPlayer.playNext(guildId),
+    playSong: (guildId, song, isRetry) => musicPlayer.playSong(guildId, song, isRetry),
+    
+    // 24/7 mode - use instance methods
+    get24hStatus: (guildId) => musicPlayer.get24hStatus(guildId),
+    start24hMode: (guildId, channelId) => musicPlayer.start24hMode(guildId, channelId),
+    stop24hMode: (guildId) => musicPlayer.stop24hMode(guildId),
+    
+    // Cache management - use standalone functions
+    getDownloadStats,
+    cleanDownloads,
+    checkCacheSizeAndCleanup,
+    onFileDownloaded,
+    getCacheConfig
+};

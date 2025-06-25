@@ -29,11 +29,26 @@ module.exports = {
         const guildId = interaction.guild.id;
         const subcommand = interaction.options.getSubcommand();
 
-        // Check permissions
-        if (!interaction.member.permissions.has('ManageGuild')) {
-            return interaction.reply({
-                content: '❌ You need "Manage Server" permission to use this command.',
-                flags: [4096]
+        // Check permissions - Bot Admin or Server Manager
+        const isAdmin = interaction.user.id === process.env.ADMIN_ID;
+        const hasManagerRole = interaction.member.permissions.has('ManageGuild') || 
+                              interaction.member.permissions.has('Administrator');
+        
+        if (!isAdmin && !hasManagerRole) {
+            const embed = new EmbedBuilder()
+                .setColor('#ff0000')
+                .setTitle('❌ Access Denied')
+                .setDescription('You do not have permission to configure 24/7 mode.')
+                .addFields(
+                    { name: '🔒 Required Permissions', value: '• Server Administrator\n• Manage Server permission\n• Bot Admin role', inline: false },
+                    { name: '👤 Your Permissions', value: this.getUserPermissionStatus(interaction.member), inline: false }
+                )
+                .setFooter({ text: 'Contact a server administrator for help' })
+                .setTimestamp();
+
+            return interaction.reply({ 
+                embeds: [embed],
+                flags: [4096] // ephemeral
             });
         }
 
@@ -55,6 +70,31 @@ module.exports = {
             console.error('Error in mode24h command:', error);
             await interaction.editReply('❌ An error occurred while managing 24/7 mode.');
         }
+    },
+
+    getUserPermissionStatus(member) {
+        const permissions = [];
+        
+        if (member.permissions.has('Administrator')) {
+            permissions.push('✅ Administrator');
+        } else {
+            permissions.push('❌ Administrator');
+        }
+        
+        if (member.permissions.has('ManageGuild')) {
+            permissions.push('✅ Manage Server');
+        } else {
+            permissions.push('❌ Manage Server');
+        }
+        
+        // Check if user is bot admin
+        if (member.user.id === process.env.ADMIN_ID) {
+            permissions.push('✅ Bot Admin');
+        } else {
+            permissions.push('❌ Bot Admin');
+        }
+        
+        return permissions.join('\n');
     },
 
     async handleEnable(interaction, guildId) {
@@ -98,7 +138,9 @@ module.exports = {
                     .addFields(
                         { name: '🎵 Mode', value: 'Preset Music', inline: true },
                         { name: '📻 Channel', value: channel.name, inline: true },
-                        { name: '🔄 Status', value: 'Playing preset playlist', inline: true }
+                        { name: '🔄 Status', value: 'Playing preset playlist', inline: true },
+                        { name: '👤 Enabled by', value: interaction.user.tag, inline: true },
+                        { name: '🔒 Permission Level', value: this.getPermissionLevel(interaction.member), inline: true }
                     )
                     .setTimestamp();
 
@@ -123,7 +165,9 @@ module.exports = {
                 .setDescription('24/7 mode has been disabled')
                 .addFields(
                     { name: '🎵 Mode', value: 'Normal (Request-based)', inline: true },
-                    { name: '🔄 Status', value: 'Stopped', inline: true }
+                    { name: '🔄 Status', value: 'Stopped', inline: true },
+                    { name: '👤 Disabled by', value: interaction.user.tag, inline: true },
+                    { name: '🔒 Permission Level', value: this.getPermissionLevel(interaction.member), inline: true }
                 )
                 .setTimestamp();
 
@@ -145,7 +189,8 @@ module.exports = {
                 { name: '🎵 Preset Songs', value: `${status.playlistInfo.totalSongs} songs`, inline: true },
                 { name: '🎶 Currently Playing', value: status.currentSong ? `${status.currentSong.title}` : 'Nothing', inline: false },
                 { name: '🔀 Shuffle Mode', value: status.playlistInfo.shuffleMode ? 'On' : 'Off', inline: true },
-                { name: '▶️ Player Status', value: status.isPlaying ? 'Active' : 'Inactive', inline: true }
+                { name: '▶️ Player Status', value: status.isPlaying ? 'Active' : 'Inactive', inline: true },
+                { name: '🔒 Access Control', value: 'Restricted to Managers & Bot Admins only', inline: false }
             )
             .setTimestamp();
 
@@ -157,6 +202,25 @@ module.exports = {
             });
         }
 
+        // Add permission info for the user
+        embed.addFields({
+            name: '👤 Your Access Level',
+            value: this.getPermissionLevel(interaction.member),
+            inline: true
+        });
+
         await interaction.editReply({ embeds: [embed] });
     },
+
+    getPermissionLevel(member) {
+        if (member.user.id === process.env.ADMIN_ID) {
+            return '🔴 Bot Administrator';
+        } else if (member.permissions.has('Administrator')) {
+            return '🟠 Server Administrator';
+        } else if (member.permissions.has('ManageGuild')) {
+            return '🟡 Server Manager';
+        } else {
+            return '🔵 Regular Member';
+        }
+    }
 };

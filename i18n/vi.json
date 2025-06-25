@@ -1,0 +1,635 @@
+{
+  "common": {
+    "error": "❌ Đã xảy ra lỗi",
+    "insufficient_funds": "💸 Không đủ tiền!",
+    "invalid_amount": "❌ Số tiền không hợp lệ",
+    "user_not_found": "❌ Không tìm thấy người dùng",
+    "success": "✅ Thành công",
+    "cancelled": "❌ Đã hủy",
+    "timeout": "⏰ Hết thời gian",
+    "permission_denied": "❌ Bạn không có quyền sử dụng lệnh này",
+    "voice_channel_required": "❌ Bạn cần ở trong kênh thoại để sử dụng lệnh này"
+  },
+  "economy": {
+    "balance": "💰 Số dư",
+    "new_balance": "💳 Số dư mới",
+    "current_balance": "💳 Số dư hiện tại",
+    "net_worth": "💎 Tài sản ròng",
+    "total_earned": "📈 Tổng thu nhập",
+    "total_spent": "📉 Tổng chi tiêu",
+    "games_played": "🎮 Số game đã chơi",
+    "games_won": "🏆 Số game thắng",
+    "win_rate": "📊 Tỷ lệ thắng",
+    "account_age": "📅 Tuổi tài khoản",
+    "server_rank": "🏆 Xếp hạng server",
+    "profile_title": "Hồ sơ kinh tế của {username}",
+    "leaderboard_title": "🏆 Bảng xếp hạng kinh tế",
+    "insufficient_funds_message": "Bạn cần {needed} nhưng chỉ có {current}",
+    "transfer_success": "💸 Chuyển tiền thành công!",
+    "transfer_message": "Đã chuyển thành công {amount} cho {username}",
+    "cannot_transfer_self": "❌ Bạn không thể chuyển tiền cho chính mình!",
+    "cannot_transfer_bot": "❌ Bạn không thể chuyển tiền cho bot!",
+    "gift_code_redeemed": "Mã quà tặng đã được đổi!"
+  },
+  "work": {
+    "title": "💼 Hoàn thành công việc!",
+    "too_tired": "😴 Quá mệt!",
+    "cooldown_message": "Bạn cần nghỉ ngơi **{time}** giây nữa trước khi làm việc tiếp.",
+    "earned": "💰 Kiếm được",
+    "next_work": "Có thể làm việc tiếp sau {time} giây",
+    "messages": [
+      "Bạn đã hoàn thành tuyến giao hàng!",
+      "Bạn đã giúp đỡ tại nhà hàng địa phương!",
+      "Bạn đã làm một số công việc lập trình tự do!",
+      "Bạn đã làm việc tại cửa hàng tiện lợi!",
+      "Bạn đã giúp chuyển đồ đạc!",
+      "Bạn đã làm một số công việc nhập liệu!"
+    ]
+  },
+  "crime": {
+    "title": "🏴‍☠️ Chọn tội phạm của bạn",
+    "laying_low": "🚨 Đang ẩn náu!",
+    "cooldown_message": "Đợi **{time}** giây nữa trước khi thực hiện tội phạm khác.",
+    "selection_timeout": "⏰ Hết thời gian lựa chọn",
+    "timeout_message": "Bạn mất quá nhiều thời gian để quyết định. Cơ hội đã qua!",
+    "cancelled_title": "❌ Đã hủy tội phạm",
+    "cancelled_message": "Bạn đã quyết định không phạm tội nào hôm nay. Lựa chọn thông minh!",
+    "choose_message": "Chọn loại tội phạm bạn muốn thực hiện. Mỗi loại có rủi ro và phần thưởng khác nhau!",
+    "choose_wisely": "Chọn một cách khôn ngoan! Phần thưởng cao đi kèm với rủi ro cao.",
+    "types": {
+      "petty": {
+        "name": "Trộm cắp vặt",
+        "emoji": "🏪",
+        "description": "**Rủi ro:** Thấp (30% thất bại)\n**Phần thưởng:** 1.5x cược\n**Phạt:** 0.8x cược",
+        "success_messages": [
+          "Bạn đã ăn cắp thành công!",
+          "Bạn đã móc túi một du khách!",
+          "Bạn đã lấy trộm ví từ quán cà phê!",
+          "Bạn đã lấy một số đồ đắt tiền!"
+        ],
+        "fail_messages": [
+          "An ninh cửa hàng đã bắt bạn!",
+          "Nạn nhân đã nhận ra và gọi cảnh sát!",
+          "Camera an ninh đã phát hiện bạn!",
+          "Một bảo vệ đang theo dõi!"
+        ]
+      },
+      "bank": {
+        "name": "Cướp ngân hàng",
+        "emoji": "🏦",
+        "description": "**Rủi ro:** Trung bình (60% thất bại)\n**Phần thưởng:** 2x cược\n**Phạt:** 1.2x cược",
+        "success_messages": [
+          "Bạn đã cướp thành công kho ngân hàng!",
+          "Bạn đã hack mạng ATM!",
+          "Bạn đã thoát với số tiền mặt!",
+          "Vụ cướp đã diễn ra hoàn hảo!"
+        ],
+        "fail_messages": [
+          "An ninh ngân hàng đã áp đảo bạn!",
+          "Báo động im lặng được kích hoạt!",
+          "Cảnh sát đến quá nhanh!",
+          "Kho tiền quá an toàn!"
+        ]
+      },
+      "heist": {
+        "name": "Cướp kim cương",
+        "emoji": "💎",
+        "description": "**Rủi ro:** Cao (80% thất bại)\n**Phần thưởng:** 3x cược\n**Phạt:** 1.5x cược",
+        "success_messages": [
+          "Bạn đã ăn cắp những viên kim cương vô giá!",
+          "Vụ cướp bảo tàng đã thành công!",
+          "Bạn đã phá được két sắt bất khả thi!",
+          "Tội phạm hoàn hảo đã được thực hiện!"
+        ],
+        "fail_messages": [
+          "Hệ thống an ninh laser đã bắt bạn!",
+          "Lực lượng an ninh tinh nhuệ đã đến!",
+          "Hệ thống báo động quá tiên tiến!",
+          "Bạn đã kích hoạt chế độ khóa!"
+        ]
+      },
+      "cyber": {
+        "name": "Tội phạm mạng",
+        "emoji": "💻",
+        "description": "**Rủi ro:** Trung bình (55% thất bại)\n**Phần thưởng:** 2.2x cược\n**Phạt:** 1.1x cược",
+        "success_messages": [
+          "Bạn đã hack thành công vào sàn giao dịch tiền mã hóa!",
+          "Bạn đã rút cạn tài khoản công ty!",
+          "Bạn đã bán dữ liệu trên dark web!",
+          "Bạn đã xâm nhập cơ sở dữ liệu lớn!"
+        ],
+        "fail_messages": [
+          "An ninh mạng đã truy vết IP của bạn!",
+          "Mã hóa của bạn đã bị phá!",
+          "Bộ phận mạng FBI đã tìm thấy bạn!",
+          "Tường lửa đã chặn cuộc tấn công của bạn!"
+        ]
+      },
+      "gta": {
+        "name": "Trộm xe hơi",
+        "emoji": "🚗",
+        "description": "**Rủi ro:** Cao (75% thất bại)\n**Phần thưởng:** 2.8x cược\n**Phạt:** 1.4x cược",
+        "success_messages": [
+          "Bạn đã ăn trộm một xe thể thao sang trọng!",
+          "Bạn đã cướp một xe bọc thép!",
+          "Bạn đã lấy một xe cổ hiếm!",
+          "Bạn đã thoát trong chiếc xe bị đánh cắp!"
+        ],
+        "fail_messages": [
+          "Cuộc truy đuổi của cảnh sát kết thúc tệ!",
+          "Xe có hệ thống GPS theo dõi!",
+          "Bạn đã đâm xe khi trốn thoát!",
+          "Tuần tra đường cao tốc đã bao vây bạn!"
+        ]
+      },
+      "launder": {
+        "name": "Rửa tiền",
+        "emoji": "💸",
+        "description": "**Rủi ro:** Thấp (40% thất bại)\n**Phần thưởng:** 1.8x cược\n**Phạt:** 0.9x cược",
+        "success_messages": [
+          "Bạn đã rửa tiền qua các công ty ma!",
+          "Bạn đã làm sạch tiền bẩn thành công!",
+          "Bạn đã sử dụng tài khoản ngoài khơi hoàn hảo!",
+          "Bạn đã che giấu dấu vết tiền!"
+        ],
+        "fail_messages": [
+          "Các điều tra viên tài chính đã phát hiện bất thường!",
+          "Tuân thủ ngân hàng đã bắt được mô hình!",
+          "Dấu vết kiểm toán dẫn về bạn!",
+          "Hoạt động đáng ngờ đã được báo cáo!"
+        ]
+      }
+    }
+  },
+  "gambling": {
+    "dice": {
+      "title": "🎲 Kết quả tung xúc xắc!",
+      "result": "🎯 Kết quả",
+      "amount": "💰 Số tiền",
+      "profit": "📈 Lợi nhuận",
+      "loss": "📉 Thua lỗ",
+      "win": "🎉 Bạn thắng!",
+      "lose": "💸 Bạn thua!",
+      "unknown_direction": "❌ Hướng không xác định: {direction}. Sử dụng 'over' hoặc 'under'",
+      "prediction_out_of_range": "❌ Dự đoán phải nằm giữa {min} và {max}",
+      "bet_on_dice_roll_1100": "Cược tung xúc xắc (1-100)",
+      "amount_to_bet": "Số tiền cược",
+      "bet_over_or_under_the_target": "Cược trên hoặc dưới mục tiêu",
+      "target_number_298": "Số mục tiêu (2-98)"
+    },
+    "rps": {
+      "title": "✂️ Kéo Búa Bao",
+      "choose_move": "Chọn nước đi của bạn!",
+      "your_choice": "👤 Lựa chọn của bạn",
+      "bot_choice": "🤖 Lựa chọn của bot",
+      "result": "🎯 Kết quả",
+      "bet_amount": "💰 Số tiền cược",
+      "payout": "💵 Tiền thưởng",
+      "win": "🎉 Bạn thắng!",
+      "lose": "💸 Bạn thua!",
+      "draw": "🤝 Hòa!",
+      "outcome": "🔄 Kết quả",
+      "bet_returned": "Hoàn trả cược",
+      "play_again": "Chơi lại",
+      "double_bet": "Tăng đôi cược",
+      "cancel": "Hủy",
+      "timeout_message": "Bạn mất quá nhiều thời gian để lựa chọn. Game đã hủy.",
+      "game_cancelled": "Game Kéo Búa Bao đã bị hủy.",
+      "choices": {
+        "rock": "Búa",
+        "paper": "Bao",
+        "scissors": "Kéo"
+      },
+      "rules": {
+        "rock": "Đập vỡ Kéo",
+        "paper": "Bao phủ Búa",
+        "scissors": "Cắt Bao"
+      },
+      "win_rule": "Thắng: 2x cược | Hòa: Giữ cược | Thua: Mất cược",
+      "play_rock_paper_scissors_for_money": "Chơi Kéo Búa Bao để kiếm tiền",
+      "amount_to_bet": "Số tiền cược"
+    },
+    "baccarat": {
+      "title": "🃏 Baccarat",
+      "choose_bet": "Chọn loại cược của bạn:",
+      "player_description": "Cược vào tay Player\n**Trả thưởng:** 2:1 (Tiền chẵn)",
+      "banker_description": "Cược vào tay Banker\n**Trả thưởng:** 1.95:1 (Hoa hồng 5%)",
+      "tie_description": "Cược vào Hòa\n**Trả thưởng:** 9:1 (Rủi ro cao)",
+      "choose_wisely": "Chọn cược một cách khôn ngoan!",
+      "bet_player": "Cược Player",
+      "bet_banker": "Cược Banker",
+      "bet_tie": "Cược Hòa",
+      "insufficient_funds": "💸 Không đủ tiền!",
+      "cancelled_title": "❌ Đã hủy game",
+      "cancelled_message": "Game Baccarat đã bị hủy.",
+      "timeout_title": "⏰ Hết thời gian game",
+      "timeout_message": "Game đã hết thời gian. Không có cược nào được đặt.",
+      "result_title": "🃏 Kết quả Baccarat",
+      "win_message": "🎉 Bạn thắng!",
+      "lose_message": "💸 Bạn thua!"
+    },
+    "tomcuaca": {
+      "title": "🦐 Tôm Cua Cá",
+      "choose_bet": "Chọn con vật bạn muốn cược:",
+      "shrimp_description": "**Trả thưởng:** 6:1\nCược vào Tôm",
+      "crab_description": "**Trả thưởng:** 6:1\nCược vào Cua",
+      "fish_description": "**Trả thưởng:** 6:1\nCược vào Cá",
+      "rooster_description": "**Trả thưởng:** 6:1\nCược vào Gà",
+      "deer_description": "**Trả thưởng:** 6:1\nCược vào Nai",
+      "gourd_description": "**Trả thưởng:** 6:1\nCược vào Bầu",
+      "choose_wisely": "Chọn con vật may mắn của bạn!",
+      "bet_shrimp": "Tôm",
+      "bet_crab": "Cua",
+      "bet_fish": "Cá",
+      "bet_rooster": "Gà",
+      "bet_deer": "Nai",
+      "bet_gourd": "Bầu",
+      "insufficient_funds": "💸 Không đủ tiền!",
+      "cancelled_title": "❌ Đã hủy game",
+      "cancelled_message": "Game Tôm Cua Cá đã bị hủy.",
+      "timeout_title": "⏰ Hết thời gian game",
+      "timeout_message": "Game đã hết thời gian. Không có cược nào được đặt.",
+      "result_title": "🎲 Kết quả Tôm Cua Cá",
+      "win_message": "🎉 Bạn thắng!",
+      "lose_message": "💸 Bạn thua!"
+    },
+    "taixiu": {
+      "title": "🎲 Tài Xỉu (Sicbo)",
+      "choose_bet": "Chọn cược của bạn:",
+      "how_to_play": "🎲 **Cách chơi:** Tung 3 xúc xắc và dự đoán tổng điểm!",
+      "payouts_info": "💰 **Trả thưởng:** Tài/Xỉu = 2x cược | Triple = 180x cược | Số cụ thể = 6x-60x cược",
+      "tai_description": "**Tổng:** 11-17\n**Trả thưởng:** 2:1\nCược vào số lớn",
+      "xiu_description": "**Tổng:** 4-10\n**Trả thưởng:** 2:1\nCược vào số nhỏ",
+      "triple_description": "**Tổng:** 3 xúc xắc giống nhau\n**Trả thưởng:** 180:1\nHiếm nhưng thưởng khủng!",
+      "specific_description": "**Tổng:** Chọn số chính xác\n**Trả thưởng:** 6x-60x cược\nRủi ro cao, thưởng cao!",
+      "specific_numbers_label": "🎰 Số cụ thể",
+      "bet_amount_label": "💰 Số tiền cược",
+      "your_balance_label": "💳 Số dư của bạn",
+      "choose_wisely": "Chọn một cách khôn ngoan! Chúc may mắn!",
+      "insufficient_funds": "💸 Không đủ tiền!",
+      "cancelled_title": "❌ Đã hủy game",
+      "cancelled_message": "Game Tài Xỉu đã bị hủy.",
+      "timeout_title": "⏰ Hết thời gian game",
+      "timeout_message": "Game đã hết thời gian. Không có cược nào được đặt.",
+      "result_title": "🎲 Kết quả Tài Xỉu",
+      "tai_win": "🔥 Tài thắng!",
+      "tai_lose": "❄️ Tài thua!",
+      "xiu_win": "❄️ Xỉu thắng!",
+      "xiu_lose": "🔥 Xỉu thua!",
+      "triple_win": "🎯 Triple thắng! ĂN TO!",
+      "triple_lose": "💸 Không có triple!",
+      "number_win": "🎰 Số {number} thắng!",
+      "number_lose": "💸 Số {number} thua!",
+      "dice_results": "🎲 Kết quả xúc xắc:",
+      "total": "Tổng:",
+      "your_bet": "🎯 Cược của bạn",
+      "dice_total": "🎲 Tổng xúc xắc",
+      "bet_amount": "💰 Số tiền cược",
+      "total_payout": "🎁 Tổng tiền thưởng",
+      "amount_lost": "📉 Số tiền thua",
+      "net_profit": "📈 Lãi/Lỗ ròng",
+      "new_balance": "💳 Số dư mới",
+      "big_win": "🎊 **THẮNG LỚN!** 🎊\n🎉 Chúc mừng bạn đã thắng lớn! 🎉",
+      "tai_display": "🔥 Tài (Lớn) - Tổng 11-17",
+      "xiu_display": "❄️ Xỉu (Nhỏ) - Tổng 4-10",
+      "triple_display": "🎯 Triple - 3 xúc xắc giống nhau",
+      "number_display": "🎰 Số {number}",
+      "triple_indicator": "🎯 (TRIPLE!)"
+    }
+  },
+  "music": {
+    "now_playing": "🎵 Đang phát",
+    "added_to_queue": "📝 Đã thêm vào hàng đợi",
+    "queue_title": "🎵 Hàng đợi nhạc",
+    "queue_empty": "Hàng đợi trống. Sử dụng `/play` để thêm bài hát!",
+    "artist": "👤 Nghệ sĩ",
+    "bitrate": "🎧 Bitrate",
+    "position": "📍 Vị trí",
+    "loop_mode": "🔁 Chế độ lặp",
+    "queue_length": "📝 Độ dài hàng đợi",
+    "status": "⏱️ Trạng thái",
+    "playing": "▶️ Đang phát",
+    "paused": "⏸️ Đã tạm dừng nhạc!",
+    "resumed": "▶️ Đã tiếp tục nhạc!",
+    "skipped": "⏭️ Đã chuyển sang bài tiếp theo!",
+    "stopped": "⏹️ Đã dừng nhạc và ngắt kết nối!",
+    "no_music_playing": "Không có nhạc nào đang phát!",
+    "no_queue_to_resume": " Không có bài hát nào trong hàng đợi để tiếp tục. Sử dụng `/play` để thêm nhạc trước!",
+    "already_playing": "🎵 Nhạc đã đang phát!",
+    "music_resumed": "Nhạc đã tiếp tục",
+    "loop_modes": {
+      "off": "▶️ Không lặp",
+      "single": "🔁 Lặp bài hiện tại",
+      "queue": "🔂 Lặp hàng đợi"
+    },
+    "admin_commands_for_247_music_management": "Lệnh admin để quản lý nhạc 24/7",
+    "update_playlist_by_scanning_music_directory": "Cập nhật playlist bằng cách quét thư mục nhạc",
+    "show_music_directory_contents": "Hiển thị nội dung thư mục nhạc",
+    "music_directory_has_been_scanned_and_playlist_updated": "Thư mục nhạc đã được quét và playlist đã cập nhật",
+    "all_songs_have_been_removed_from_the_247_playlist": "Tất cả bài hát đã được xóa khỏi playlist 24/7",
+    "control_music_loop_settings": "Điều khiển cài đặt lặp nhạc",
+    "loop_current_song": "🔁 Lặp bài hiện tại",
+    "loop_queue": "🔂 Lặp hàng đợi",
+    "repeat_the_current_song": "Lặp lại bài hát hiện tại",
+    "repeat_the_entire_queue": "Lặp lại toàn bộ hàng đợi",
+    "manage_247_music_mode": "Quản lý chế độ nhạc 24/7",
+    "enable_247_mode": "Bật chế độ 24/7",
+    "voice_channel_for_247_mode": "Kênh thoại cho chế độ 24/7",
+    "disable_247_mode": "Tắt chế độ 24/7",
+    "check_247_mode_status": "Kiểm tra trạng thái chế độ 24/7",
+    "247_mode_is_now_active_in_channelname": "Chế độ 24/7 hiện đang hoạt động trong {channel}",
+    "247_mode_has_been_disabled": "Chế độ 24/7 đã được tắt",
+    "show_currently_playing_song_with_controls": "Hiển thị bài hát đang phát với các điều khiển",
+    "you_need_to_be_in_a_voice_channel_to_play_music": "Bạn cần ở trong kênh thoại để phát nhạc",
+    "play_a_youtube_video": "Phát video YouTube",
+    "youtube_url_to_play": "URL YouTube để phát",
+    "show_the_current_music_queue": "Hiển thị hàng đợi nhạc hiện tại",
+    "skip_the_current_song": "Bỏ qua bài hát hiện tại",
+    "stop_playing_music_and_clear_the_queue": "Dừng phát nhạc và xóa hàng đợi",
+    "skip_failed": "Không thể bỏ qua bài hát hiện tại.",
+    "stop_failed": "Không thể dừng nhạc.",
+    "play_a_youtube_video_or_search_for_music": "Phát video YouTube hoặc tìm kiếm nhạc",
+    "youtube_url_or_search_query": "URL YouTube hoặc từ khóa tìm kiếm",
+    "auto_select_first_result_default_true": "Tự động chọn kết quả đầu tiên (mặc định: có)",
+    "searching_for": "🔍 Đang tìm kiếm: **{query}**...",
+    "no_search_results_found": "❌ Không tìm thấy kết quả nào.",
+    "auto_selected": "🎵 Đã Tự Động Chọn",
+    "channel": "👤 Kênh",
+    "duration": "⏱️ Thời lượng",
+    "search_query": "🔍 Từ khóa tìm kiếm",
+    "auto_selected_footer": "Đã tự động chọn kết quả đầu tiên • Dùng autoselect:false để chọn thủ công",
+    "search_results": "🔍 Kết Quả Tìm Kiếm",
+    "found_results_for": "Tìm thấy {count} kết quả cho: **{query}**\n\nChọn bài hát từ menu bên dưới:",
+    "choose_song_to_play": "Chọn bài hát để phát",
+    "selection_expires_30_seconds": "Lựa chọn hết hạn sau 30 giây",
+    "waiting_for_selection": "Đang chờ lựa chọn...",
+    "song_selected": "🎵 Đã Chọn Bài Hát",
+    "views": "👀 Lượt xem",
+    "selected_by": "👤 Được chọn bởi",
+    "selection_timeout": "⏰ Hết Thời Gian Chọn",
+    "auto_selected_timeout": "Đã tự động chọn: **{title}**",
+    "auto_selected_due_to_timeout": "Đã tự động chọn do hết thời gian",
+    "could_not_find_or_process_song": "❌ Không thể tìm thấy hoặc xử lý bài hát được yêu cầu.",
+    "error_processing_request": "❌ Đã xảy ra lỗi khi xử lý yêu cầu của bạn.",
+    "processing_direct_url": "Đang xử lý URL trực tiếp: {url}",
+    "no_audio_streams_available": "Không có luồng âm thanh khả dụng",
+    "no_valid_audio_formats_found": "Không tìm thấy định dạng âm thanh hợp lệ",
+    "playlist_added": "📝 Đã Thêm Playlist",
+    "author": "👤 Tác giả",
+    "videos": "🎵 Video",
+    "requested_by": "👤 Được yêu cầu bởi"
+  },
+  "admin": {
+    "money_given": "💰 Đã tặng tiền",
+    "money_taken": "💸 Đã lấy tiền",
+    "user_reset": "🔄 Đặt lại người dùng",
+    "admin_view": "🔍 Xem admin: Hồ sơ của {username}",
+    "given_message": "Đã tặng {amount} cho {username}",
+    "taken_message": "{status} {amount} từ {username}",
+    "reset_message": "Đã đặt lại dữ liệu kinh tế của {username}",
+    "transaction_successful": "Giao dịch thành công",
+    "insufficient_funds_partial": "Không đủ tiền để lấy toàn bộ số tiền",
+    "last_work": "💼 Làm việc lần cuối",
+    "last_crime": "🏴‍☠️ Phạm tội lần cuối",
+    "user_id": "🆔 ID người dùng",
+    "never": "Chưa bao giờ"
+  },
+  "commands": {
+    "admin24h": {
+      "description": "Lệnh admin để quản lý nhạc 24/7",
+      "playlist_updated": "🔄 Playlist đã cập nhật",
+      "247_playlist": "📝 Playlist 24/7",
+      "247_system_statistics": "📊 Thống kê hệ thống 24/7",
+      "playlist_cleared": "🗑️ Playlist đã xóa",
+      "playlist_shuffled": "🔀 Playlist đã xáo trộn",
+      "cache_cleaned": "🧹 Cache đã dọn dẹp",
+      "cache_statistics": "📊 Thống kê cache",
+      "music_directory_contents": "📁 Nội dung thư mục nhạc",
+      "update_playlist_by_scanning_music_directory": "Cập nhật playlist bằng cách quét thư mục nhạc",
+      "show_current_247_playlist": "Hiển thị playlist 24/7 hiện tại",
+      "show_detailed_statistics": "Hiển thị thống kê chi tiết",
+      "clear_the_entire_playlist": "Xóa toàn bộ playlist",
+      "enable_shuffle_mode_and_shuffle_current_playlist": "Bật chế độ xáo trộn và xáo trộn playlist hiện tại",
+      "manage_cache_and_downloads": "Quản lý cache và tải xuống",
+      "cache_action_to_perform": "Hành động cache cần thực hiện",
+      "show_music_directory_contents": "Hiển thị nội dung thư mục nhạc",
+      "all_cache_and_downloads_have_been_cleared": "Tất cả cache và tải xuống đã được xóa"
+    },
+    "bal": {
+      "description": "Kiểm tra số dư nhanh",
+      "your_balance": "💰 Số dư của bạn",
+      "quick_balance_check": "Kiểm tra số dư nhanh",
+      "user_to_check_balance_for_optional": "Người dùng để kiểm tra số dư (tùy chọn)"
+    },
+    "balance": {
+      "description": "Người dùng để kiểm tra số dư",
+      "user_to_check_balance_for": "Người dùng để kiểm tra số dư"
+    },
+    "chebal": {
+      "description": "Cân bằng phương trình hóa học",
+      "chemical_equation_balancer": "⚗️ Công cụ cân bằng phương trình hóa học",
+      "error_title": "❌ Lỗi cân bằng",
+      "balance_chemical_equations": "Cân bằng phương trình hóa học",
+      "chemical_equation_to_balance_eg_h2_o2_h2o": "Phương trình hóa học để cân bằng (ví dụ: H2 + O2 -> H2O)"
+    },
+    "chemistry": {
+      "description": "Lệnh trợ giúp hóa học",
+      "chemical_equation_examples": "⚗️ Ví dụ phương trình hóa học",
+      "error_title": "❌ Không tìm thấy nguyên tố",
+      "chemistry_helper_commands": "Lệnh trợ giúp hóa học",
+      "show_example_chemical_equations_for_balancing": "Hiển thị ví dụ phương trình hóa học để cân bằng",
+      "look_up_element_information": "Tra cứu thông tin nguyên tố",
+      "chemical_element_symbol_eg_h_he_li": "Ký hiệu nguyên tố hóa học (ví dụ: H, He, Li)",
+      "show_common_chemical_compounds": "Hiển thị các hợp chất hóa học phổ biến"
+    },
+    "cleancache": {
+      "description": "Dọn dẹp cache và tải xuống hết hạn",
+      "clean_expired_cache_entries_and_downloads": "Dọn dẹp cache và tải xuống hết hạn",
+      "type_of_cleaning": "Loại dọn dẹp"
+    },
+    "crime": {
+      "description": "Phạm tội để kiếm tiền (rủi ro!)",
+      "error_title": "❌ Đã hủy tội phạm",
+      "still_laying_low": "🚨 Vẫn đang ẩn náu!",
+      "selection_timeout": "⏰ Hết thời gian lựa chọn",
+      "insufficient_funds": "💸 Không đủ tiền!",
+      "commit_a_crime_for_money_risky": "Phạm tội để kiếm tiền (rủi ro!)"
+    },
+    "dice": {
+      "description": "Cược tung xúc xắc (1-100)",
+      "insufficient_funds": "💸 Không đủ tiền!",
+      "dice_roll_result": "🎲 Kết quả tung xúc xắc!",
+      "bet_on_dice_roll_1100": "Cược tung xúc xắc (1-100)",
+      "amount_to_bet": "Số tiền cược",
+      "bet_over_or_under_the_target": "Cược trên hoặc dưới mục tiêu",
+      "target_number_298": "Số mục tiêu (2-98)"
+    },
+    "economyadmin": {
+      "description": "Lệnh admin cho hệ thống kinh tế",
+      "money_given": "💰 Đã tặng tiền",
+      "money_taken": "💸 Đã lấy tiền",
+      "user_reset": "🔄 Người dùng đã đặt lại",
+      "admin_commands_for_economy_system": "Lệnh admin cho hệ thống kinh tế",
+      "give_money_to_a_user": "Tặng tiền cho người dùng",
+      "user_to_give_money_to": "Người dùng để tặng tiền",
+      "amount_to_give": "Số tiền tặng",
+      "take_money_from_a_user": "Lấy tiền từ người dùng",
+      "user_to_take_money_from": "Người dùng để lấy tiền",
+      "amount_to_take": "Số tiền lấy",
+      "user_to_reset": "Người dùng để đặt lại",
+      "user_to_check_balance_for": "Người dùng để kiểm tra số dư"
+    },
+    "language": {
+      "description": "Quản lý cài đặt ngôn ngữ bot",
+      "language_changed": "🌐 Đã thay đổi ngôn ngữ",
+      "error_title": "❌ Lỗi ngôn ngữ",
+      "current_language": "🌐 Ngôn ngữ hiện tại",
+      "available_languages": "🌐 Ngôn ngữ có sẵn",
+      "translation_statistics": "📊 Thống kê dịch thuật",
+      "plugin_scan_complete": "🔍 Quét plugin hoàn tất",
+      "manage_bot_language_settings": "Quản lý cài đặt ngôn ngữ bot",
+      "set_bot_language": "Đặt ngôn ngữ bot",
+      "language_code": "Mã ngôn ngữ",
+      "show_current_language": "Hiển thị ngôn ngữ hiện tại",
+      "list_available_languages": "Liệt kê ngôn ngữ có sẵn",
+      "scan_for_new_commands_and_generate_translations_admin_only": "Quét lệnh mới và tạo bản dịch (Chỉ admin)",
+      "show_translation_statistics": "Hiển thị thống kê dịch thuật",
+      "manage_your_personal_language_setting": "Quản lý cài đặt ngôn ngữ cá nhân",
+      "your_preferred_language_leave_empty_to_check_current": "Ngôn ngữ ưa thích của bạn (để trống để kiểm tra hiện tại)",
+      "show_detailed_translation_status_and_statistics": "Hiển thị trạng thái và thống kê dịch thuật chi tiết",
+      "manage_i18n_configuration_admin_only": "Quản lý cấu hình i18n (Chỉ admin)",
+      "configuration_setting_to_modify": "Cài đặt cấu hình để sửa đổi",
+      "new_value_for_the_setting": "Giá trị mới cho cài đặt",
+      "export_translation_data_admin_only": "Xuất dữ liệu dịch thuật (Chỉ admin)",
+      "export_format": "Định dạng xuất"
+    },
+    "leaderboard": {
+      "description": "Hiển thị người dùng giàu nhất",
+      "economy_leaderboard": "🏆 Bảng xếp hạng kinh tế",
+      "show_the_richest_users": "Hiển thị người dùng giàu nhất",
+      "number_of_users_to_show_max_20": "Số người dùng hiển thị (tối đa 20)"
+    },
+    "loop": {
+      "description": "Điều khiển cài đặt lặp nhạc",
+      "loop_mode_updated": "🎵 Chế độ lặp đã cập nhật",
+      "loop_control_panel": "🎵 Bảng điều khiển lặp",
+      "control_music_loop_settings": "Điều khiển cài đặt lặp nhạc",
+      "loop_mode_to_set": "Chế độ lặp để đặt"
+    },
+    "mode24h": {
+      "description": "Quản lý chế độ nhạc 24/7",
+      "success_title": "✅ Đã bật chế độ 24/7",
+      "247_mode_disabled": "🛑 Đã tắt chế độ 24/7",
+      "247_mode_status": "📊 Trạng thái chế độ 24/7",
+      "manage_247_music_mode": "Quản lý chế độ nhạc 24/7",
+      "enable_247_mode": "Bật chế độ 24/7",
+      "voice_channel_for_247_mode": "Kênh thoại cho chế độ 24/7",
+      "disable_247_mode": "Tắt chế độ 24/7",
+      "check_247_mode_status": "Kiểm tra trạng thái chế độ 24/7"
+    },
+    "money": {
+      "description": "Kiểm tra số dư và hồ sơ kinh tế của bạn",
+      "check_your_balance_and_economy_profile": "Kiểm tra số dư và hồ sơ kinh tế của bạn",
+      "user_to_check_balance_for_optional": "Người dùng để kiểm tra số dư (tùy chọn)"
+    },
+    "nowplaying": {
+      "description": "Hiển thị bài hát đang phát với các điều khiển",
+      "now_playing": "🎵 Đang phát",
+      "show_currently_playing_song_with_controls": "Hiển thị bài hát đang phát với các điều khiển"
+    },
+    "ping": {
+      "description": "Trả lời với Pong!",
+      "replies_with_pong": "Trả lời với Pong!"
+    },
+    "play": {
+      "description": "Phát video YouTube",
+      "now_playing": "🎵 Đang phát",
+      "added_to_queue": "📝 Đã thêm vào hàng đợi",
+      "current_queue": "📝 Hàng đợi hiện tại",
+      "play_a_youtube_video": "Phát video YouTube",
+      "youtube_url_to_play": "URL YouTube để phát"
+    },
+    "queue": {
+      "description": "Hiển thị hàng đợi nhạc hiện tại",
+      "music_queue": "🎵 Hàng đợi nhạc",
+      "show_the_current_music_queue": "Hiển thị hàng đợi nhạc hiện tại"
+    },
+    "rps": {
+      "description": "Chơi Kéo Búa Bao để kiếm tiền",
+      "insufficient_funds": "💸 Không đủ tiền!",
+      "rock_paper_scissors": "✂️ Kéo Búa Bao",
+      "error_title": "❌ Đã hủy game",
+      "game_timeout": "⏰ Hết thời gian game",
+      "rock_paper_scissors_result": "✂️ Kết quả Kéo Búa Bao",
+      "play_rock_paper_scissors_for_money": "Chơi Kéo Búa Bao để kiếm tiền",
+      "amount_to_bet": "Số tiền cược"
+    },
+    "skip": {
+      "description": "Bỏ qua bài hát hiện tại",
+      "skip_the_current_song": "Bỏ qua bài hát hiện tại"
+    },
+    "stop": {
+      "description": "Dừng phát nhạc và xóa hàng đợi",
+      "stop_playing_music_and_clear_the_queue": "Dừng phát nhạc và xóa hàng đợi"
+    },
+    "transfer": {
+      "description": "Chuyển tiền cho người dùng khác",
+      "insufficient_funds": "💸 Không đủ tiền!",
+      "transfer_successful": "💸 Chuyển tiền thành công!",
+      "transfer_money_to_another_user": "Chuyển tiền cho người dùng khác",
+      "user_to_transfer_money_to": "Người dùng để chuyển tiền",
+      "amount_to_transfer": "Số tiền chuyển"
+    },
+    "work": {
+      "description": "Làm việc để kiếm tiền",
+      "too_tired": "😴 Quá mệt!",
+      "work_complete": "💼 Hoàn thành công việc!",
+      "work_to_earn_some_money": "Làm việc để kiếm tiền"
+    },
+    "baccarat": {
+      "description": "Chơi game bài Baccarat để kiếm tiền",
+      "play_baccarat_card_game_for_money": "Chơi game bài Baccarat để kiếm tiền",
+      "amount_to_bet": "Số tiền cược"
+    },
+    "tomcuaca": {
+      "description": "Chơi game Tôm Cua Cá (trò chơi xúc xắc Việt Nam) để kiếm tiền",
+      "play_tom_cua_ca_vietnamese_dice_game_for_money": "Chơi game Tôm Cua Cá (trò chơi xúc xắc Việt Nam) để kiếm tiền",
+      "amount_to_bet": "Số tiền cược"
+    },
+    "taixiu": {
+      "description": "Chơi game Tài Xỉu (Sicbo) để kiếm tiền",
+      "play_tai_xiu_sicbo_dice_game_for_money": "Chơi game Tài Xỉu (Sicbo) để kiếm tiền",
+      "amount_to_bet": "Số tiền cược"
+    },
+    "gift": {
+      "description": "Tạo mã quà tặng bằng số dư của bạn",
+      "create_a_gift_code_using_your_balance": "Tạo mã quà tặng bằng số dư của bạn",
+      "amount_to_put_in_the_gift_code": "Số tiền để đưa vào mã quà tặng",
+      "maximum_uses_default_1_max_10": "Số lần sử dụng tối đa (mặc định: 1, tối đa: 10)",
+      "expiration_time_1h_6h_1d_3d_7d_default_24h": "Thời gian hết hạn (1h, 6h, 1d, 3d, 7d - mặc định: 24h)"
+    },
+    "redeem": {
+      "description": "Đổi mã quà tặng để nhận tiền",
+      "redeem_a_gift_code_for_economy_balance": "Đổi mã quà tặng để nhận tiền",
+      "the_gift_code_to_redeem": "Mã quà tặng để đổi"
+    },
+    "mygifts": {
+      "description": "Xem các mã quà tặng bạn đã tạo",
+      "view_your_created_gift_codes": "Xem các mã quà tặng bạn đã tạo"
+    },
+    "admingift": {
+      "description": "Lệnh admin để quản lý mã quà tặng",
+      "admin_commands_for_gift_code_management": "Lệnh admin để quản lý mã quà tặng",
+      "create_a_new_gift_code": "Tạo mã quà tặng mới",
+      "balance_amount_for_the_gift_code": "Số tiền trong mã quà tặng",
+      "maximum_uses_default_1": "Số lần sử dụng tối đa (mặc định: 1)",
+      "expiration_time_eg_7d_24h_1w": "Thời gian hết hạn (ví dụ: 7d, 24h, 1w)",
+      "show_all_active_gift_codes": "Hiển thị tất cả mã quà tặng đang hoạt động",
+      "delete_a_specific_gift_code": "Xóa một mã quà tặng cụ thể",
+      "the_gift_code_to_delete": "Mã quà tặng để xóa",
+      "show_gift_code_redemption_history": "Hiển thị lịch sử đổi mã quà tặng",
+      "show_gift_code_system_statistics": "Hiển thị thống kê hệ thống mã quà tặng",
+      "clean_up_expired_gift_codes": "Dọn dẹp các mã quà tặng hết hạn"
+    }
+  }
+}

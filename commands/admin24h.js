@@ -29,20 +29,6 @@ module.exports = {
                 .setDescription('Enable shuffle mode and shuffle current playlist'))
         .addSubcommand(subcommand =>
             subcommand
-                .setName('cache')
-                .setDescription('Manage cache and downloads')
-                .addStringOption(option =>
-                    option
-                        .setName('action')
-                        .setDescription('Cache action to perform')
-                        .setRequired(true)
-                        .addChoices(
-                            { name: 'Clean All', value: 'clean_all' },
-                            { name: 'Stats', value: 'stats' },
-                            { name: 'Clear Downloads', value: 'clear_downloads' }
-                        )))
-        .addSubcommand(subcommand =>
-            subcommand
                 .setName('directory')
                 .setDescription('Show music directory contents')),
 
@@ -74,9 +60,6 @@ module.exports = {
                     break;
                 case 'shuffle':
                     await this.handleShuffle(interaction);
-                    break;
-                case 'cache':
-                    await this.handleCache(interaction);
                     break;
                 case 'directory':
                     await this.handleDirectory(interaction);
@@ -202,55 +185,6 @@ module.exports = {
             await interaction.editReply({ embeds: [embed] });
         } else {
             await interaction.editReply('❌ Failed to shuffle playlist.');
-        }
-    },
-
-    async handleCache(interaction) {
-        const action = interaction.options.getString('action');
-        const cacheManager = new CacheManager();
-
-        switch (action) {
-            case 'clean_all':
-                const statsBefore = cacheManager.getCacheStats();
-                const downloadStatsBefore = musicPlayer.getDownloadStats();
-                
-                cacheManager.clearAllCache();
-                const deletedDownloads = musicPlayer.cleanDownloads(true);
-                
-                const embed1 = new EmbedBuilder()
-                    .setColor('#00ff00')
-                    .setTitle('🧹 Cache Cleaned')
-                    .setDescription('All cache and downloads have been cleared')
-                    .addFields(
-                        { name: '📝 Cache Entries', value: `Cleared: ${statsBefore.totalEntries}`, inline: true },
-                        { name: '📁 Downloads', value: `Deleted: ${deletedDownloads} files (${downloadStatsBefore.sizeMB} MB)`, inline: true }
-                    )
-                    .setTimestamp();
-
-                await interaction.editReply({ embeds: [embed1] });
-                break;
-
-            case 'stats':
-                const cacheStats = cacheManager.getCacheStats();
-                const downloadStats = musicPlayer.getDownloadStats();
-                
-                const embed2 = new EmbedBuilder()
-                    .setColor('#0099ff')
-                    .setTitle('📊 Cache Statistics')
-                    .addFields(
-                        { name: '📝 Cache Entries', value: `${cacheStats.totalEntries}`, inline: true },
-                        { name: '💾 Cache Size', value: `${(cacheStats.totalSize / 1024).toFixed(2)} KB`, inline: true },
-                        { name: '📁 Download Size', value: `${downloadStats.sizeMB} MB`, inline: true }
-                    )
-                    .setTimestamp();
-
-                await interaction.editReply({ embeds: [embed2] });
-                break;
-
-            case 'clear_downloads':
-                const deletedCount = musicPlayer.cleanDownloads(true);
-                await interaction.editReply(`✅ Cleared all downloads! Deleted ${deletedCount} files.`);
-                break;
         }
     },
 
