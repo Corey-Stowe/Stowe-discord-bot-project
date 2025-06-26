@@ -13,7 +13,7 @@ module.exports = {
 
         try {
             // Bot information
-            const botVersion = '2.4';
+            const botVersion = '2.5.1'; // Updated for enhanced YouTube integration
             const author = 'stowe';
             const repo = 'https://github.com/Corey-Stowe/Stowe-discord-bot-project';
             const issuesUrl = 'https://github.com/Corey-Stowe/Stowe-discord-bot-project/issues';
@@ -43,6 +43,40 @@ module.exports = {
                 }
             } catch (error) {
                 console.log('Queue stats not available:', error.message);
+            }
+
+            // YouTube configuration stats
+            let youtubeConfigStats = {
+                apiEnabled: false,
+                keysAvailable: 0,
+                quotaUsed: 0,
+                totalQuota: 0,
+                cookiesConfigured: false,
+                currentMethod: 'default'
+            };
+
+            try {
+                const youtubeApiManager = require('../utils/youtubeApiManager');
+                const cookieManager = require('../utils/cookieManager');
+                
+                const apiStats = youtubeApiManager.getApiKeyStats();
+                const hasValidCookies = await cookieManager.hasValidCookies();
+                
+                youtubeConfigStats = {
+                    apiEnabled: youtubeApiManager.isApiEnabled(),
+                    keysAvailable: apiStats.totalKeys,
+                    activeKeys: apiStats.activeKeys,
+                    quotaUsed: apiStats.totalQuotaUsed,
+                    totalQuota: apiStats.totalDailyLimit,
+                    cookiesConfigured: hasValidCookies,
+                    currentMethod: hasValidCookies 
+                        ? 'cookies' 
+                        : youtubeApiManager.isApiEnabled() && process.env.YOUTUBE_PREFER_API === 'true' 
+                            ? 'api' 
+                            : 'default'
+                };
+            } catch (error) {
+                console.log('YouTube configuration stats not available:', error.message);
             }
 
             // Format uptime
@@ -118,6 +152,17 @@ module.exports = {
                         value: `**Repository:** [GitHub](${repo})\n` +
                                `**Report Issues:** [Issues Page](${issuesUrl})\n` +
                                `**License:** MIT`,
+                        inline: true
+                    },
+                    {
+                        name: '🎵 YouTube Configuration',
+                        value: `**Priority Order:** 🔧 Default (v2.4) → 🍪 Cookies → 🔑 API\n` +
+                               `**Current Method:** ${youtubeConfigStats.currentMethod === 'api' ? '🔑 API (Fallback)' : youtubeConfigStats.currentMethod === 'cookies' ? '🍪 Cookies (if available)' : '🔧 Default (v2.4 compatibility)'}\n` +
+                               `**API Status:** ${youtubeConfigStats.apiEnabled ? '✅ Enabled' : '❌ Disabled'}\n` +
+                               `**API Keys:** ${youtubeConfigStats.keysAvailable} total (${youtubeConfigStats.activeKeys || 0} active)\n` +
+                               `**Cookies:** ${youtubeConfigStats.cookiesConfigured ? '✅ Configured' : '❌ Not configured'}\n` +
+                               `**Quota Used:** ${youtubeConfigStats.quotaUsed.toLocaleString()}/${youtubeConfigStats.totalQuota.toLocaleString()} units\n` +
+                               `**HTML Cleanup:** ✅ Auto-cleanup enabled`,
                         inline: true
                     }
                 )

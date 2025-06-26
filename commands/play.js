@@ -48,6 +48,14 @@ module.exports = {
         const platform = interaction.options.getString('platform') || 'auto';
         const autoSelect = interaction.options.getBoolean('autoselect') ?? true;
         
+        // Validate query input
+        if (!query || query.trim() === '') {
+            return interaction.reply({
+                content: '❌ Please provide a search query or URL.',
+                ephemeral: true
+            });
+        }
+        
         const lang = await i18n.getLanguage(guildId, userId);
         
         // Check if user is in a voice channel
@@ -58,7 +66,9 @@ module.exports = {
             });
         }
 
-        await interaction.deferReply();        try {
+        await interaction.deferReply();
+        
+        try {
             const db = new Database();
             const youtube = new Youtube();
             const soundcloud = new SoundCloud();
@@ -161,6 +171,30 @@ module.exports = {
             };
         } catch (error) {
             console.error('Error handling direct URL:', error);
+            
+            // If it's a bot detection error, show helpful message
+            if (error.message.includes('Sign in to confirm') || error.message.includes('bot')) {
+                const embed = new EmbedBuilder()
+                    .setColor('#ff6b35')
+                    .setTitle('🤖 YouTube Bot Detection')
+                    .setDescription(
+                        '**YouTube is blocking the bot request**\n\n' +
+                        '🔧 **Admin Solutions:**\n' +
+                        '• Use `/cookies refresh` to get new cookies\n' +
+                        '• Use `/cookies update` to add browser cookies\n' +
+                        '• Use `/cookies test` to verify cookies work\n\n' +
+                        '🔍 **User Alternatives:**\n' +
+                        '• Try searching instead: `/play query:song name`\n' +
+                        '• Use a different YouTube URL\n' +
+                        '• Wait a few minutes and try again'
+                    )
+                    .setFooter({ text: 'This is a YouTube limitation, not a bot issue' })
+                    .setTimestamp();
+
+                await interaction.editReply({ embeds: [embed] });
+                return null;
+            }
+            
             throw error;
         }
     },    async handleAutoSearch(youtube, soundcloud, spotify, query, interaction, platform, lang) {

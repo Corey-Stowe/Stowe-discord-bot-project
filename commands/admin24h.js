@@ -32,6 +32,9 @@ module.exports = {
                 .setName('directory')
                 .setDescription('Show music directory contents')),
 
+    // Add admin-only flag
+    adminOnly: true,
+
     async execute(interaction) {
         // Check if user is the authorized admin
         if (interaction.user.id !== process.env.ADMIN_ID) {

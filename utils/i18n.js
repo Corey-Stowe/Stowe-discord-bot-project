@@ -295,9 +295,12 @@ class I18nManager {
           // Replace placeholders
         if (typeof value === 'string' && Object.keys(replacements).length > 0) {
             for (const [placeholder, replacement] of Object.entries(replacements)) {
+                // Handle null/undefined replacements by converting to string
+                const safeReplacement = replacement === null || replacement === undefined ? '' : String(replacement);
+                
                 // Escape special regex characters in placeholder
                 const escapedPlaceholder = placeholder.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
-                value = value.replace(new RegExp(`\\{${escapedPlaceholder}\\}`, 'g'), replacement);
+                value = value.replace(new RegExp(`\\{${escapedPlaceholder}\\}`, 'g'), safeReplacement);
             }
         }
         

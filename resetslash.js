@@ -4,8 +4,8 @@ const path = require('node:path');
 const env = require('dotenv').config();
 
 // Validate environment variables
-if (!process.env.TOKEN) {
-    console.log('❌ [ERROR] TOKEN is not set in .env file');
+if (!process.env.DISCORD_TOKEN) {
+    console.log('❌ [ERROR] DISCORD_TOKEN is not set in .env file');
     process.exit(1);
 }
 
@@ -15,7 +15,7 @@ if (!process.env.CLIENT_ID) {
 }
 
 // Construct and prepare an instance of the REST module
-const rest = new REST().setToken(process.env.TOKEN);
+const rest = new REST().setToken(process.env.DISCORD_TOKEN);
 
 // Remove all commands
 (async () => {

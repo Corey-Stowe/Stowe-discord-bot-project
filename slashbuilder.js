@@ -33,7 +33,7 @@ for (const file of commandFiles) {
 }
 
 // Validate environment variables
-if (!process.env.TOKEN) {
+if (!process.env.DISCORD_TOKEN) {
     console.log('❌ [ERROR] TOKEN is not set in .env file');
     process.exit(1);
 }
@@ -44,7 +44,7 @@ if (!process.env.CLIENT_ID) {
 }
 
 // Construct and prepare an instance of the REST module
-const rest = new REST().setToken(process.env.TOKEN);
+const rest = new REST().setToken(process.env.DISCORD_TOKEN);
 
 // Deploy commands
 (async () => {

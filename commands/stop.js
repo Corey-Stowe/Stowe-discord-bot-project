@@ -30,11 +30,23 @@ module.exports = {
             });
         }
         
-        const success = await musicPlayer.stop(guildId);
-        if (success) {
-            await interaction.reply(i18n.translate(lang, 'music.stopped'));
-        } else {
-            await interaction.reply(i18n.translate(lang, 'music.stop_failed') || 'Failed to stop the music.');
+        // Defer reply for potentially slow operations
+        await interaction.deferReply();
+        
+        try {
+            const success = await musicPlayer.stop(guildId);
+            if (success) {
+                await interaction.editReply(i18n.translate(lang, 'music.stopped'));
+            } else {
+                await interaction.editReply(i18n.translate(lang, 'music.stop_failed') || 'Failed to stop the music.');
+            }
+        } catch (error) {
+            console.error('Error in stop command:', error);
+            try {
+                await interaction.editReply(i18n.translate(lang, 'common.error') || 'An error occurred while stopping the music.');
+            } catch (replyError) {
+                console.error('Failed to send error reply:', replyError);
+            }
         }
     },
 };

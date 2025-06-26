@@ -1,17 +1,23 @@
 {
   "name": "stowebot",
-  "version": "1.0.0",
+  "version": "2.5.1",
   "description": "Discord Bot",
   "main": "index.js",
   "scripts": {
-    "start": "node index.js",
-    "dev": "node --watch index.js",
+    "start": "node --no-deprecation index.js",
+    "dev": "node --watch --no-deprecation index.js",
     "deploy": "node slashbuilder.js",
+    "deploy-admin": "powershell -ExecutionPolicy Bypass -File deploy-commands.ps1 2",
+    "deploy-all": "powershell -ExecutionPolicy Bypass -File deploy-commands.ps1 3",
     "undeploy": "node resetslash.js",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "author": "Stowe",
   "license": "MIT",
+  "overrides": {
+    "whatwg-url": "^11.0.0",
+    "tr46": "^4.1.1"
+  },
   "dependencies": {
     "@discordjs/builders": "^1.10.0",
     "@discordjs/opus": "^0.10.0",
@@ -20,8 +26,9 @@
     "@mongez/dotenv": "^1.1.9",
     "discord.js": "^14.17.3",
     "dot-env": "^0.0.1",
-    "dotenv": "^16.4.7",
+    "dotenv": "^16.5.0",
     "ffmpeg": "^0.0.4",
+    "googleapis": "^144.0.0",
     "sodium-native": "^5.0.6",
     "soundcloud-downloader": "^1.0.0",
     "spotify-web-api-node": "^5.0.2",

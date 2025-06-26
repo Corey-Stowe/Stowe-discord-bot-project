@@ -68,10 +68,15 @@ npm install
 
 3. Rename file `.env.example` to `.env` file:
 ```env
-TOKEN=your_bot_token_here
+# Required Discord Configuration
+DISCORD_TOKEN=your_bot_token_here
 CLIENT_ID=your_bot_client_id
 ADMIN_ID=your_discord_user_id
 GUILD_ID=your_test_guild_id
+
+# YouTube API Configuration (Recommended)
+YOUTUBE_API_ENABLED=true          # Enable YouTube API functionality for users
+YOUTUBE_PREFER_API=true           # Prefer API over cookies when both available
 
 # Spotify API Credentials (optional - for Spotify support)
 # Get these from: https://developer.spotify.com/dashboard/applications
@@ -81,11 +86,19 @@ SPOTIFY_CLIENT_SECRET=your_spotify_client_secret_here
 # Language Settings
 BOT_LANGUAGE=en
 # Available: en (English), vi (Vietnamese), ja (Japanese)
+
 # Cache Management Configuration
 CACHE_MAX_SIZE_MB=1024
 CACHE_CLEANUP_COUNT=5
 CACHE_AUTO_CLEANUP=true
 ```
+
+> **⚠️ Important YouTube Configuration:**
+> - **`YOUTUBE_API_ENABLED=true`**: Allows users to add and manage their own YouTube Data API v3 keys via `/youtube` command for reliable, compliant access
+> - **`YOUTUBE_API_ENABLED=false`**: Disables API functionality, relies only on cookie-based scraping (higher risk)
+> - **`YOUTUBE_PREFER_API=true`**: When both API keys and cookies are available, prioritizes API for better performance and compliance
+>
+> **⚠️ Cookie Scraping Warning:** Cookie-based YouTube access may violate YouTube's Terms of Service and could result in account restrictions or IP bans. Use at your own risk. The YouTube API method is strongly recommended for production use.
 
 4. Create required directories:
 ```bash
@@ -102,6 +115,158 @@ npm run deploy
 ```bash
 npm start
 ```
+
+## YouTube API Setup
+
+StoweBot supports two methods for YouTube integration:
+
+### 🔑 Method 1: YouTube Data API v3 (Recommended)
+
+**Advantages:**
+- ✅ Compliant with YouTube Terms of Service
+- ✅ Faster and more reliable performance
+- ✅ Better quota management and rate limiting
+- ✅ No risk of account bans or IP blocking
+- ✅ Multiple users can add their own API keys
+
+**Setup Steps:**
+1. Visit [Google Cloud Console](https://console.cloud.google.com/)
+2. Create a new project or select an existing one
+3. Enable the YouTube Data API v3
+4. Create credentials (API Key)
+5. (Optional) Configure API key restrictions for enhanced security
+6. Set `YOUTUBE_API_ENABLED=true` in your `.env` file
+7. Users can add their API keys using `/youtube add [key]` command
+
+**User Commands:**
+```bash
+/youtube add [your-api-key]    # Add your YouTube API key
+/youtube test                  # Test your API key functionality
+/youtube quota                 # View your API quota usage
+/youtube remove                # Remove your API key
+```
+
+### 🍪 Method 2: Cookie-Based Scraping (Fallback)
+
+**⚠️ Important Warnings:**
+- May violate YouTube's Terms of Service
+- Risk of account restrictions or permanent bans
+- Potential IP blocking and rate limiting issues
+- Less reliable than official API
+- Should only be used as temporary fallback
+
+**Use Cases:**
+- API quota exceeded temporarily
+- Emergency fallback when API is unavailable
+- Testing purposes only (not recommended for production)
+
+**Admin Commands (Cookie Management):**
+```bash
+/cookies import               # Import cookies from file
+/cookies status              # View current cookie status
+/cookies refresh             # Refresh existing cookies
+/cookies clear               # Clear all cookies
+```
+
+### � Method 3: Default Fallback (v2.4 Compatibility)
+
+**When No API Keys or Cookies Are Configured:**
+- ✅ Works out-of-the-box without any configuration
+- ✅ Maintains backward compatibility with v2.4
+- ✅ No setup required - just install and run
+- ✅ Safe for testing and development
+- ⚠️ Limited reliability compared to API method
+- ⚠️ Subject to YouTube's rate limiting
+- ⚠️ May experience occasional failures
+
+**Perfect for:**
+- Quick testing and development
+- Users who don't want to configure API keys
+- Backward compatibility with existing setups
+- Small-scale personal use
+
+**How It Works:**
+The bot automatically detects if neither API keys nor cookies are configured and falls back to the basic YouTube scraping method used in v2.4, ensuring the bot continues to work without any special configuration.
+
+### �📋 Configuration Examples
+
+**Production Setup (Recommended):**
+```env
+YOUTUBE_API_ENABLED=true     # Users can add API keys
+YOUTUBE_PREFER_API=true      # Prefer API over cookies
+```
+
+**Cookie-Only Setup (Not Recommended):**
+```env
+YOUTUBE_API_ENABLED=false    # Disable API functionality
+YOUTUBE_PREFER_API=false     # Use only cookies
+```
+
+### 🔧 Configuration Variables Explained
+
+#### YOUTUBE_API_ENABLED
+
+This variable controls whether YouTube Data API v3 functionality is available to users.
+
+**When `YOUTUBE_API_ENABLED=true` (Recommended):**
+- ✅ `/youtube` command becomes available to all users
+- ✅ Users can add their personal API keys via `/youtube add`
+- ✅ API quota management and monitoring enabled
+- ✅ Higher reliability and faster YouTube searches
+- ✅ Compliance with YouTube Terms of Service
+- ✅ Better playlist support and metadata
+- ✅ **Best for:** Production environments, public bots, compliance-focused deployments
+
+**When `YOUTUBE_API_ENABLED=false` (Not Recommended):**
+- ❌ `/youtube` command is completely disabled
+- ❌ No API key functionality available
+- ⚠️ Falls back to cookie-based scraping only
+- ⚠️ Higher risk of rate limiting and blocks
+- ⚠️ Potential Terms of Service violations
+- ⚠️ Less reliable YouTube functionality
+- ⚠️ **Use cases:** Testing, temporary fallback, personal-use-only bots
+
+#### YOUTUBE_PREFER_API
+
+This variable controls which method is prioritized when both API keys and cookies are available.
+
+**When `YOUTUBE_PREFER_API=true` (Recommended):**
+- 🥇 **First Priority:** Check if user has valid API key
+- 🥈 **Fallback:** Use cookies if no API key available
+- ⚡ Faster response times with API
+- 📊 Better quota management
+- 🛡️ Higher compliance and reliability
+- 🎯 **Result:** Maximum performance with compliant fallback
+
+**When `YOUTUBE_PREFER_API=false` (Advanced Use):**
+- 🥇 **First Priority:** Use cookies for scraping
+- 🥈 **Fallback:** Use API key if cookies fail
+- ⚠️ Higher risk of detection and blocking
+- 🐌 Potentially slower responses
+- ❓ Less predictable behavior
+- 🔧 **Use case:** Testing cookie functionality, debugging
+
+#### Configuration Combinations
+
+| YOUTUBE_API_ENABLED | YOUTUBE_PREFER_API | Behavior | Use Case |
+|--------------------|--------------------|----------|----------|
+| `true` | `true` | 🏆 API first, cookies fallback | **Production (Recommended)** |
+| `true` | `false` | 🔧 Cookies first, API fallback | Development/Testing |
+| `false` | `true` | ⚠️ Cookies only (preference ignored) | Cookie-only mode |
+| `false` | `false` | ⚠️ Cookies only | Cookie-only mode |
+
+### 💡 Configuration Tips
+
+- **For production:** Always use `YOUTUBE_API_ENABLED=true` with `YOUTUBE_PREFER_API=true`
+- **For development:** Enable API but test both methods by toggling preference
+- **For private use:** Consider cookie-only if you accept the risks
+- **Migration:** Start with API enabled and migrate users gradually
+
+### 📚 Additional Resources
+
+For detailed setup instructions, see:
+- [YOUTUBE_API_SETUP.md](YOUTUBE_API_SETUP.md) - Complete YouTube API setup guide
+- [COOKIE_SETUP.md](COOKIE_SETUP.md) - Cookie extraction and import guide
 
 ## Project Structure
 
@@ -341,7 +506,15 @@ stowebot/
 /ping                         # Check bot latency
 ```
 
-### 👑 Admin Commands
+### � YouTube API Management (User Commands)
+```bash
+/youtube add <api-key>        # Add your personal YouTube Data API v3 key
+/youtube test                 # Test your API key functionality
+/youtube quota                # View your API quota usage and limits
+/youtube remove               # Remove your API key from the system
+```
+
+### �👑 Admin Commands
 ```bash
 # 24/7 System Management
 /admin24h update              # Scan preset music directory
@@ -352,6 +525,14 @@ stowebot/
 /cleancache info              # Show detailed cache information
 /cleancache clear             # Clear download cache
 /cleancache stats             # Show cache statistics
+/cleancache cookies           # Clear YouTube cookies (admin only)
+/cleancache apikeys           # Clear all YouTube API keys (admin only)
+
+# YouTube Cookie Management (Admin Only - Use at Own Risk)
+/cookies import               # Import YouTube cookies from file
+/cookies status               # View current cookie status and health
+/cookies refresh              # Refresh and validate existing cookies
+/cookies clear                # Clear all stored cookies
 
 # Economy Management
 /admingift create <amount> <uses> # Create gift codes
@@ -361,6 +542,8 @@ stowebot/
 /economyadmin reset <user>    # Reset user's economy data
 /economyadmin stats           # Economy system statistics
 ```
+
+> **⚠️ Admin Cookie Commands Warning:** The `/cookies` commands are for YouTube cookie management and should be used with extreme caution. Cookie-based scraping may violate YouTube's Terms of Service and could result in account restrictions. These commands are provided for emergency fallback situations only.
 
 ## Development Guide
 
@@ -423,7 +606,7 @@ module.exports = {
     data: new SlashCommandBuilder()
         .setName('example')
         .setDescription('Example command'),
-    
+
     async execute(interaction) {
         // Command logic here
         await interaction.reply('Hello World!');
@@ -611,13 +794,27 @@ CMD ["npm", "start"]
 
 ### Environment Variables
 ```env
-TOKEN=your_bot_token_here
+DISCORD_TOKEN=your_bot_token_here
 CLIENT_ID=your_bot_client_id
 ADMIN_ID=your_discord_user_id
 GUILD_ID=your_test_guild_id
 
+# YouTube API Configuration
+YOUTUBE_API_ENABLED=true
+YOUTUBE_PREFER_API=true
+
 # Spotify API Credentials (optional)
 SPOTIFY_CLIENT_ID=your_spotify_client_id_here
+SPOTIFY_CLIENT_SECRET=your_spotify_client_secret_here
+
+# Bot Configuration
+BOT_LANGUAGE=en
+
+# Cache Management
+CACHE_MAX_SIZE_MB=1024
+CACHE_CLEANUP_COUNT=5
+CACHE_AUTO_CLEANUP=true
+```
 SPOTIFY_CLIENT_SECRET=your_spotify_client_secret_here
 
 # Language Settings
@@ -660,7 +857,7 @@ CACHE_AUTO_CLEANUP=true
 ```json
 {
   "discord.js": "^14.x.x",
-  "@discordjs/voice": "^0.16.x", 
+  "@discordjs/voice": "^0.16.x",
   "@distube/ytdl-core": "^4.x.x",
   "sodium": "^3.x.x"
 }
@@ -681,14 +878,33 @@ CACHE_AUTO_CLEANUP=true
 
 ## Version History
 
-### 🚀 v2.4 - Multi-Platform Music Integration (Current)
+### � v2.5 - Enhanced YouTube Integration & API System (Current)
 **Release Date**: June 2025
+**Major Features**:
+- ✅ **YouTube Data API v3 Integration** - Official API support with multi-user key management
+- ✅ **Three-Tier Fallback System** - API → Cookies → Default (v2.4 compatibility)
+- ✅ **User-Managed API Keys** - `/youtube` command for personal API key management
+- ✅ **Enhanced Cookie System** - Advanced cookie validation and rotation via `/cookies` command
+- ✅ **Automatic Method Detection** - Intelligent fallback ensures bot works without configuration
+- ✅ **Quota Management** - Real-time API quota tracking and key rotation
+- ✅ **Comprehensive Documentation** - Setup guides for API and cookie configurations
+- ✅ **Admin Tools** - Enhanced `/cleancache` and `/info` commands for system monitoring
+- ✅ **Improved Error Handling** - Fixed i18n null-safety issues and enhanced user feedback
+
+**Technical Improvements**:
+- Added `youtubeApiManager.js` for API key lifecycle management
+- Enhanced `cookieManager.js` with validation and automatic refresh
+- Updated YouTube plugin with intelligent method selection
+- Improved logging with method-specific feedback
+- Enhanced environment configuration with `.env.example`
+
+### 🚀 v2.4 - Multi-Platform Music Integration
+**Release Date**: May 2025
 **Major Features**:
 - ✅ **Spotify Integration** - Full Spotify track, playlist, and album support with YouTube/SoundCloud fallback
 - ✅ **Enhanced SoundCloud Support** - Improved streaming reliability and playlist handling
 - ✅ **Advanced Music Search** - Multi-platform search with auto-detection and manual selection
-- ✅ **Smart Matching Algorithm** - Duration verification and ISRC-based matching for accurate audio 
-sourcing
+- ✅ **Smart Matching Algorithm** - Duration verification and ISRC-based matching for accurate audio sourcing
 - ✅ **Platform Detection** - Automatic URL detection and appropriate streaming method selection
 - ✅ **Enhanced User Experience** - Visual match quality indicators and transparent audio source display
 Fixed Bug

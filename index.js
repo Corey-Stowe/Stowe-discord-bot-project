@@ -103,8 +103,41 @@ client.on('interactionCreate', async interaction => {
     const command = client.commands.get(interaction.commandName);
 
     if (!command) {
-        logger.error('COMMAND', `Unknown command: ${interaction.commandName}`, {
+        // Special handling for admin users - allow them to execute admin commands even if not registered
+        if (interaction.user.id === process.env.ADMIN_ID) {
+            logger.warn('COMMAND', `Admin attempting unregistered command: ${interaction.commandName}`, {
+                user: interaction.user.tag,
+                userId: interaction.user.id,
+                guild: interaction.guild?.name
+            });
+            
+            await interaction.reply({
+                content: `⚠️ Command \`/${interaction.commandName}\` is not registered in Discord.\n\n` +
+                        `**Possible solutions:**\n` +
+                        `• Deploy admin commands: \`npm run deploy-admin\`\n` +
+                        `• Deploy all commands: \`npm run deploy-all\`\n` +
+                        `• Manual admin deployment: \`node slashbuilder-admin.js --admin --user=${process.env.ADMIN_ID}\`\n\n` +
+                        `**Available admin commands:** youtube, admin24h, admingift, economyadmin, cleancache, cookies, youtubemode`,
+                ephemeral: true
+            });
+        } else {
+            logger.error('COMMAND', `Unknown command: ${interaction.commandName}`, {
+                user: interaction.user.tag,
+                guild: interaction.guild?.name
+            });
+        }
+        return;
+    }
+
+    // Check if command is admin-only
+    if (command.adminOnly && interaction.user.id !== process.env.ADMIN_ID) {
+        await interaction.reply({
+            content: '❌ You do not have permission to use this command.',
+            ephemeral: true
+        });
+        logger.warn('COMMAND', `Unauthorized admin command attempt: ${interaction.commandName}`, {
             user: interaction.user.tag,
+            userId: interaction.user.id,
             guild: interaction.guild?.name
         });
         return;
@@ -142,19 +175,30 @@ client.on('interactionCreate', async interaction => {
         
         try {
             const errorMessage = 'There was an error while executing this command!';
-            if (interaction.replied || interaction.deferred) {
-                await interaction.followUp({
+            
+            // Check interaction state and respond appropriately
+            if (interaction.deferred || interaction.replied) {
+                // If already deferred or replied, use editReply
+                await interaction.editReply({
                     content: errorMessage,
-                    ephemeral: true
+                    flags: [4096] // Ephemeral flag
                 });
             } else {
+                // If not yet responded, send initial reply
                 await interaction.reply({
                     content: errorMessage,
-                    ephemeral: true
+                    flags: [4096] // Ephemeral flag
                 });
             }
         } catch (replyError) {
-            logger.error('INTERACTION', 'Failed to send error reply', replyError);
+            logger.error('INTERACTION', 'Failed to send error reply', {
+                requestBody: replyError.requestBody,
+                rawError: replyError.rawError,
+                code: replyError.code,
+                status: replyError.status,
+                method: replyError.method,
+                url: replyError.url
+            });
         }
     }
 });
@@ -236,7 +280,7 @@ process.on('unhandledRejection', (reason, promise) => {
 
 // Login to Discord with your client's token
 logger.info('BOT', 'Starting bot login...');
-client.login(process.env.TOKEN).catch(error => {
+client.login(process.env.DISCORD_TOKEN).catch(error => {
     logger.error('BOT', 'Failed to login', error);
     process.exit(1);
 });
