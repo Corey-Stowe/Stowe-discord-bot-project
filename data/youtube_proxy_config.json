@@ -1,0 +1,27 @@
+{
+  "proxy": {
+    "enabled": true,
+    "rotation_enabled": true,
+    "rotation_interval": 900000,
+    "default_region": "your-regionname-name",
+    "servers": {
+      "your-regionname-name": "host:port"
+    },
+    "credentials": {
+      "username": "user",
+      "password": "password"
+    }
+  },
+  "cookies": {
+    "auto_regenerate": true,
+    "rotation_interval": 1800000,
+    "max_retry_attempts": 3,
+    "format_validation": true
+  },
+  "anti_detection": {
+    "random_delays": true,
+    "user_agent_rotation": true,
+    "request_headers_variation": true,
+    "connection_pooling": false
+  }
+}

@@ -134,7 +134,8 @@ module.exports = {
         try {
             logger.info('MUSIC', `Processing direct URL: ${url}`);
             
-            const videoInfo = await youtube.getYoutubeInfo(url);
+            // Use enhanced retry mechanism instead of basic getYoutubeInfo
+            const videoInfo = await youtube.getYoutubeInfoWithRetry(url);
             
             if (!videoInfo.streamingData || !videoInfo.streamingData.adaptiveFormats) {
                 throw new Error('No audio streams available');
@@ -546,6 +547,9 @@ module.exports = {
             const playerData = musicPlayer.getPlayer(guildId);
             const isCurrentlyPlaying = playerData && musicPlayer.isPlaying(guildId);
             let firstSong = null;
+
+            // Cancel any scheduled disconnect since we're adding playlist songs
+            musicPlayer.cancelScheduledDisconnect(guildId);
 
             // Add all videos to queue
             for (let i = 0; i < playlistInfo.videos.length; i++) {
@@ -989,6 +993,9 @@ module.exports = {
 
             logger.music('Now Playing', interaction.guild, song);
         } else {
+            // Cancel any scheduled disconnect since we're adding a new song to queue
+            musicPlayer.cancelScheduledDisconnect(guildId);
+
             // Add to queue
             await db.addToQueue(guildId, song);
             const queuePosition = (await db.getQueue(guildId)).length;            const queueEmbed = new EmbedBuilder()

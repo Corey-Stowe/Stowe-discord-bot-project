@@ -1,10 +1,12 @@
 const { SlashCommandBuilder, EmbedBuilder, ActionRowBuilder, ButtonBuilder, ButtonStyle } = require('discord.js');
 const youtubeApiManager = require('../utils/youtubeApiManager');
+const YouTubeModeManager = require('../utils/youtubeModeManager');
 
 module.exports = {
     data: new SlashCommandBuilder()
         .setName('youtube')
-        .setDescription('Manage YouTube API keys for enhanced music functionality')
+        .setDescription('Manage YouTube API keys for enhanced music functionality (Admin only)')
+        .setDefaultMemberPermissions('0') // Requires administrator permissions
         .addSubcommand(subcommand =>
             subcommand
                 .setName('setup')
@@ -13,83 +15,87 @@ module.exports = {
                     option
                         .setName('apikey')
                         .setDescription('Your YouTube Data API v3 key')
-                        .setRequired(true))
+                        .setRequired(true)
+                )
                 .addStringOption(option =>
                     option
                         .setName('name')
-                        .setDescription('Name for this API key (optional)')
-                        .setRequired(false))
+                        .setDescription('A name to identify this API key')
+                        .setRequired(false)
+                )
                 .addIntegerOption(option =>
                     option
                         .setName('dailylimit')
-                        .setDescription('Daily quota limit (default: 10000)')
-                        .setMinValue(1000)
+                        .setDescription('Daily quota limit for this key (default: 10000)')
+                        .setRequired(false)
+                        .setMinValue(100)
                         .setMaxValue(1000000)
-                        .setRequired(false)))
+                )
+        )
         .addSubcommand(subcommand =>
             subcommand
-                .setName('list')
-                .setDescription('List your API keys and their usage'))
-        .addSubcommand(subcommand =>
-            subcommand
-                .setName('remove')
-                .setDescription('Remove one of your API keys')
-                .addStringOption(option =>
-                    option
-                        .setName('keyid')
-                        .setDescription('ID of the API key to remove')
-                        .setRequired(true)))
-        .addSubcommand(subcommand =>
-            subcommand
-                .setName('test')
-                .setDescription('Test an API key')
-                .addStringOption(option =>
-                    option
-                        .setName('keyid')
-                        .setDescription('ID of the API key to test (optional - tests random key if not provided)')
-                        .setRequired(false)))
+                .setName('status')
+                .setDescription('View current YouTube API configuration and mode status')
+        )
         .addSubcommand(subcommand =>
             subcommand
                 .setName('stats')
-                .setDescription('Show API usage statistics'))
+                .setDescription('View YouTube API usage statistics')
+        )
         .addSubcommand(subcommand =>
             subcommand
                 .setName('guide')
-                .setDescription('Show how to get a YouTube API key')),
-
-    // Add admin-only flag
-    adminOnly: true,
+                .setDescription('Get a guide on setting up YouTube API keys')
+        )
+        .addSubcommand(subcommand =>
+            subcommand
+                .setName('list')
+                .setDescription('List all configured API keys')
+        )
+        .addSubcommand(subcommand =>
+            subcommand
+                .setName('remove')
+                .setDescription('Remove an API key')
+                .addStringOption(option =>
+                    option
+                        .setName('keyid')
+                        .setDescription('The ID of the API key to remove')
+                        .setRequired(true)
+                )
+        ),
 
     async execute(interaction) {
+        // Check if user has administrator permissions
+        if (!interaction.member.permissions.has('Administrator')) {
+            return interaction.reply({ 
+                content: '❌ This command is restricted to administrators only.', 
+                ephemeral: true 
+            });
+        }
+
         const subcommand = interaction.options.getSubcommand();
 
-        try {
-            switch (subcommand) {
-                case 'setup':
-                    await this.handleSetup(interaction);
-                    break;
-                case 'list':
-                    await this.handleList(interaction);
-                    break;
-                case 'remove':
-                    await this.handleRemove(interaction);
-                    break;
-                case 'test':
-                    await this.handleTest(interaction);
-                    break;
-                case 'stats':
-                    await this.handleStats(interaction);
-                    break;
-                case 'guide':
-                    await this.handleGuide(interaction);
-                    break;
-            }
-        } catch (error) {
-            console.error('Error in youtube command:', error);
-            await interaction.reply({
-                content: '❌ An error occurred while managing YouTube API keys.',
-                ephemeral: true
-            });
+        switch (subcommand) {
+            case 'setup':
+                await this.handleSetup(interaction);
+                break;
+            case 'status':
+                await this.handleStatus(interaction);
+                break;
+            case 'stats':
+                await this.handleStats(interaction);
+                break;
+            case 'guide':
+                await this.handleGuide(interaction);
+                break;
+            case 'list':
+                await this.handleList(interaction);
+                break;
+            case 'remove':
+                await this.handleRemove(interaction);
+                break;
+            default:
+                await interaction.reply({ content: '❌ Unknown subcommand!', ephemeral: true });
         }
     },
 
@@ -99,6 +105,29 @@ module.exports = {
         const dailyLimit = interaction.options.getInteger('dailylimit') || 10000;
 
         await interaction.deferReply({ ephemeral: true });
+
+        // Check current YouTube mode first
+        const modeManager = new YouTubeModeManager();
+        const currentMode = modeManager.getCurrentMode();
+        const modeInfo = modeManager.getModeInfo();
+
+        // Warn if not in API mode
+        if (currentMode !== 'api') {
+            const warningEmbed = new EmbedBuilder()
+                .setColor('#ffa500')
+                .setTitle('⚠️ Mode Notice')
+                .setDescription(`Current YouTube mode: **${currentMode}**`)
+                .addFields(
+                    { name: '📋 Current Mode', value: modeInfo.description, inline: false },
+                    { name: '💡 Tip', value: 'Use `/youtubemode switch api` to enable API-only mode after adding your key', inline: false }
+                )
+                .setFooter({ text: 'API keys will still be saved and can be used when switching to API mode' });
+
+            await interaction.editReply({ embeds: [warningEmbed] });
+            
+            // Wait 3 seconds to let user read the warning
+            await new Promise(resolve => setTimeout(resolve, 3000));
+        }
 
         // Test the API key first
         const testResult = await youtubeApiManager.testApiKey(apiKey);
@@ -132,15 +161,26 @@ module.exports = {
                 dailyLimit: dailyLimit
             });
 
+            // Check if we can now switch to default (hybrid) mode for best results
+            const canUseDefaultMode = modeManager.validateModeRequirements('default').canActivate;
+            let modeRecommendation = '';
+            
+            if (currentMode !== 'default' && canUseDefaultMode) {
+                modeRecommendation = '\n\n🔄 **Recommended Mode: Default (Hybrid)**\nUse `/youtubemode switch default` to enable hybrid mode for the best music playback experience (combines API reliability with streaming capability).';
+            } else if (currentMode === 'api') {
+                modeRecommendation = '\n\n⚠️ **Note**: API-only mode provides metadata only (no audio streaming). For music playback, use `/youtubemode switch default` for hybrid mode.';
+            }
+
             const embed = new EmbedBuilder()
                 .setColor('#00ff00')
                 .setTitle('✅ API Key Added Successfully')
-                .setDescription('Your YouTube API key has been added and tested successfully!')
+                .setDescription('Your YouTube API key has been added and tested successfully!' + modeRecommendation)
                 .addFields(
                     { name: '🆔 Key ID', value: keyId, inline: true },
                     { name: '📝 Name', value: name || `API Key by ${interaction.user.username}`, inline: true },
                     { name: '📊 Daily Limit', value: `${dailyLimit.toLocaleString()} units`, inline: true },
                     { name: '✅ Status', value: 'Active and ready to use', inline: true },
+                    { name: '🎵 Current Mode', value: `${currentMode} (${modeInfo.description})`, inline: false },
                     { name: '🔒 Security', value: 'Your API key is stored securely and only used for YouTube requests', inline: false }
                 )
                 .setFooter({ text: 'Use /youtube stats to monitor usage' })
@@ -153,256 +193,240 @@ module.exports = {
         }
     },
 
-    async handleList(interaction) {
+    async handleStatus(interaction) {
         await interaction.deferReply({ ephemeral: true });
 
-        const stats = youtubeApiManager.getApiKeyStats(interaction.user.id);
-        
-        if (stats.totalKeys === 0) {
-            const embed = new EmbedBuilder()
-                .setColor('#ffa500')
-                .setTitle('📋 No API Keys Found')
-                .setDescription('You haven\'t added any YouTube API keys yet.')
-                .addFields(
-                    { name: '🚀 Get Started', value: 'Use `/youtube setup` to add your first API key', inline: false },
-                    { name: '📖 Need Help?', value: 'Use `/youtube guide` for setup instructions', inline: false }
-                )
-                .setTimestamp();
-
-            return interaction.editReply({ embeds: [embed] });
-        }
+        const modeManager = new YouTubeModeManager();
+        const currentMode = modeManager.getCurrentMode();
+        const modeInfo = modeManager.getModeInfo();
+        const requirements = modeManager.getModeRequirements();
 
         const embed = new EmbedBuilder()
             .setColor('#0099ff')
-            .setTitle('📋 Your YouTube API Keys')
-            .setDescription(`You have **${stats.totalKeys}** API key(s) configured`)
-            .setTimestamp();
+            .setTitle('🎵 YouTube System Status')
+            .setDescription(`**Current Mode:** ${currentMode}`)
+            .addFields(
+                { name: '📋 Mode Description', value: modeInfo.description, inline: false },
+                { name: '📅 Last Updated', value: modeInfo.lastUpdated ? `<t:${Math.floor(new Date(modeInfo.lastUpdated).getTime() / 1000)}:R>` : 'Unknown', inline: true },
+                { name: '👤 Updated By', value: modeInfo.updatedBy || 'Unknown', inline: true },
+                { name: '🔍 Source', value: modeInfo.source || 'JSON config', inline: true }
+            );
 
-        stats.keys.forEach((key, index) => {
-            const statusEmoji = key.isActive ? '✅' : '❌';
-            const quotaBar = this.createQuotaBar(key.quotaUsed, key.dailyLimit);
+        // Add mode requirements section
+        let requirementsText = '';
+        Object.entries(requirements).forEach(([mode, info]) => {
+            const isCurrentMode = mode === currentMode;
+            const status = info.canActivate ? '✅' : '❌';
+            const currentIndicator = isCurrentMode ? ' *(current)*' : '';
             
-            embed.addFields({
-                name: `${statusEmoji} ${key.name}`,
-                value: 
-                    `**ID:** \`${key.id}\`\n` +
-                    `**Status:** ${key.isActive ? 'Active' : 'Inactive'}\n` +
-                    `**Quota:** ${key.quotaUsed.toLocaleString()}/${key.dailyLimit.toLocaleString()} (${key.quotaPercentage}%)\n` +
-                    `${quotaBar}\n` +
-                    `**Errors:** ${key.errorCount}\n` +
-                    `**Last Used:** ${key.lastUsed ? `<t:${Math.floor(key.lastUsed / 1000)}:R>` : 'Never'}\n` +
-                    `**Added:** <t:${Math.floor(key.addedAt / 1000)}:R>`,
-                inline: true
-            });
+            requirementsText += `${status} **${mode}**${currentIndicator}\n`;
+            requirementsText += `${info.description}\n`;
+            if (!info.canActivate && info.missingRequirements.length > 0) {
+                requirementsText += `Missing: ${info.missingRequirements.join(', ')}\n`;
+            }
+            requirementsText += '\n';
         });
 
+        embed.addFields({ name: '🔧 Mode Requirements', value: requirementsText || 'No requirements data available', inline: false });
+
+        // Add API usage if available
+        const stats = youtubeApiManager.getApiStats();
+        if (stats.totalKeys > 0) {
+            embed.addFields(
+                { name: '🔑 API Keys', value: `${stats.totalKeys} configured`, inline: true },
+                { name: '📊 Today\'s Usage', value: `${stats.todayUsage.toLocaleString()}`, inline: true },
+                { name: '🎯 Available Quota', value: `${stats.availableQuota.toLocaleString()}`, inline: true }
+            );
+        }
+
         await interaction.editReply({ embeds: [embed] });
-    },
-
-    async handleRemove(interaction) {
-        const keyId = interaction.options.getString('keyid');
-        
-        await interaction.deferReply({ ephemeral: true });
-
-        try {
-            youtubeApiManager.removeApiKey(keyId, interaction.user.id);
-            
-            const embed = new EmbedBuilder()
-                .setColor('#ff6b35')
-                .setTitle('🗑️ API Key Removed')
-                .setDescription('Your API key has been successfully removed.')
-                .addFields(
-                    { name: '🆔 Removed Key ID', value: keyId, inline: true },
-                    { name: '⏰ Removed At', value: `<t:${Math.floor(Date.now() / 1000)}:F>`, inline: true }
-                )
-                .setTimestamp();
-
-            await interaction.editReply({ embeds: [embed] });
-
-        } catch (error) {
-            await interaction.editReply(`❌ ${error.message}`);
-        }
-    },
-
-    async handleTest(interaction) {
-        const keyId = interaction.options.getString('keyid');
-        
-        await interaction.deferReply({ ephemeral: true });
-
-        try {
-            if (keyId) {
-                // Test specific key
-                const stats = youtubeApiManager.getApiKeyStats(interaction.user.id);
-                const targetKey = stats.keys.find(k => k.id === keyId);
-                
-                if (!targetKey) {
-                    return interaction.editReply('❌ API key not found or you don\'t own it.');
-                }
-
-                const testResult = await youtubeApiManager.testApiKey(targetKey.key);
-                
-                const embed = new EmbedBuilder()
-                    .setColor(testResult.valid ? '#00ff00' : '#ff0000')
-                    .setTitle(`${testResult.valid ? '✅' : '❌'} API Key Test Results`)
-                    .addFields(
-                        { name: '🆔 Key ID', value: keyId, inline: true },
-                        { name: '📝 Key Name', value: targetKey.name, inline: true },
-                        { name: '🧪 Test Result', value: testResult.valid ? 'Valid and working' : 'Invalid or error', inline: true }
-                    );
-
-                if (!testResult.valid) {
-                    embed.addFields({ name: '🚫 Error Details', value: testResult.error, inline: false });
-                }
-
-                await interaction.editReply({ embeds: [embed] });
-            } else {
-                // Test a working key from the pool
-                try {
-                    const result = await youtubeApiManager.searchVideos('test', 1);
-                    
-                    const embed = new EmbedBuilder()
-                        .setColor('#00ff00')
-                        .setTitle('✅ API System Test Successful')
-                        .setDescription('Successfully performed a test search using available API keys.')
-                        .addFields(
-                            { name: '🔍 Test Query', value: 'test', inline: true },
-                            { name: '📊 Results Found', value: `${result.length}`, inline: true },
-                            { name: '⏰ Test Time', value: `<t:${Math.floor(Date.now() / 1000)}:F>`, inline: true }
-                        )
-                        .setTimestamp();
-
-                    await interaction.editReply({ embeds: [embed] });
-                } catch (error) {
-                    await interaction.editReply(`❌ API test failed: ${error.message}`);
-                }
-            }
-
-        } catch (error) {
-            await interaction.editReply(`❌ Test failed: ${error.message}`);
-        }
     },
 
     async handleStats(interaction) {
         await interaction.deferReply({ ephemeral: true });
 
-        const isAdmin = interaction.user.id === process.env.ADMIN_ID;
-        const stats = youtubeApiManager.getApiKeyStats(isAdmin ? null : interaction.user.id);
+        const stats = youtubeApiManager.getApiStats();
         
+        if (stats.totalKeys === 0) {
+            const embed = new EmbedBuilder()
+                .setColor('#ffa500')
+                .setTitle('📊 YouTube API Statistics')
+                .setDescription('No API keys configured yet.')
+                .addFields(
+                    { name: '🚀 Get Started', value: 'Use `/youtube setup` to add your first API key', inline: false },
+                    { name: '📖 Need Help?', value: 'Use `/youtube guide` for setup instructions', inline: false }
+                );
+            
+            return interaction.editReply({ embeds: [embed] });
+        }
+
         const embed = new EmbedBuilder()
             .setColor('#0099ff')
             .setTitle('📊 YouTube API Statistics')
-            .setDescription(isAdmin ? 'Global API usage statistics' : 'Your personal API usage statistics')
             .addFields(
-                { name: '🔑 Total Keys', value: `${stats.totalKeys}`, inline: true },
-                { name: '✅ Active Keys', value: `${stats.activeKeys}`, inline: true },
-                { name: '❌ Inactive Keys', value: `${stats.totalKeys - stats.activeKeys}`, inline: true },
-                { name: '📊 Quota Used Today', value: `${stats.totalQuotaUsed.toLocaleString()}`, inline: true },
-                { name: '📈 Total Daily Limit', value: `${stats.totalDailyLimit.toLocaleString()}`, inline: true },
-                { name: '📋 Usage Percentage', value: `${((stats.totalQuotaUsed / stats.totalDailyLimit) * 100).toFixed(1)}%`, inline: true }
-            );
+                { name: '🔑 Total API Keys', value: stats.totalKeys.toString(), inline: true },
+                { name: '✅ Active Keys', value: stats.activeKeys.toString(), inline: true },
+                { name: '❌ Failed Keys', value: stats.failedKeys.toString(), inline: true },
+                { name: '📊 Today\'s Usage', value: stats.todayUsage.toLocaleString(), inline: true },
+                { name: '🎯 Available Quota', value: stats.availableQuota.toLocaleString(), inline: true },
+                { name: '⚡ Success Rate', value: `${stats.successRate.toFixed(1)}%`, inline: true }
+            )
+            .setFooter({ text: 'Statistics reset daily at midnight UTC' })
+            .setTimestamp();
 
-        // Add quota usage bar
-        const quotaBar = this.createQuotaBar(stats.totalQuotaUsed, stats.totalDailyLimit);
-        embed.addFields({ name: '📊 Daily Quota Usage', value: quotaBar, inline: false });
-
-        // Show top keys by usage (admin only)
-        if (isAdmin && stats.keys.length > 0) {
-            const topKeys = stats.keys
-                .sort((a, b) => b.quotaUsed - a.quotaUsed)
-                .slice(0, 3);
-
-            embed.addFields({
-                name: '🏆 Top API Keys by Usage',
-                value: topKeys.map((key, index) => 
-                    `**${index + 1}.** ${key.name} - ${key.quotaUsed.toLocaleString()} units (${key.quotaPercentage}%)`
-                ).join('\n') || 'No usage yet',
-                inline: false
+        // Add key details if user is admin
+        if (interaction.member.permissions.has('Administrator')) {
+            let keyDetails = '';
+            stats.keyDetails.forEach(key => {
+                const status = key.isActive ? '✅' : '❌';
+                keyDetails += `${status} ${key.name}: ${key.usage.toLocaleString()}/${key.dailyLimit.toLocaleString()}\n`;
             });
+            
+            if (keyDetails) {
+                embed.addFields({ name: '🔍 Key Details (Admin)', value: keyDetails, inline: false });
+            }
         }
-
-        embed.setFooter({ text: 'Quota resets daily at midnight UTC' })
-             .setTimestamp();
 
         await interaction.editReply({ embeds: [embed] });
     },
 
     async handleGuide(interaction) {
+        await interaction.deferReply({ ephemeral: true });
+
+        const modeManager = new YouTubeModeManager();
+        const currentMode = modeManager.getCurrentMode();
+
         const embed = new EmbedBuilder()
-            .setColor('#4285f4')
-            .setTitle('📖 YouTube API Key Setup Guide')
-            .setDescription('Follow these steps to get your YouTube Data API v3 key:')
+            .setColor('#0099ff')
+            .setTitle('📖 YouTube API Setup Guide')
+            .setDescription('Follow these steps to set up YouTube API integration:')
             .addFields(
-                {
-                    name: '1️⃣ Go to Google Cloud Console',
-                    value: '[console.cloud.google.com](https://console.cloud.google.com)',
-                    inline: false
+                { 
+                    name: '🎯 **Best Mode for Music: Default (Hybrid)**', 
+                    value: '**Recommended**: Use "default" mode for music playback - it combines API reliability with streaming capability.\n\n⚠️ **Important**: API-only mode provides metadata only (no audio streaming). For music bots, hybrid mode is essential.', 
+                    inline: false 
                 },
-                {
-                    name: '2️⃣ Create or Select Project',
-                    value: '• Click "Select a project" → "New Project"\n• Give it a name like "Discord Bot"\n• Click "Create"',
-                    inline: false
+                { 
+                    name: '🔧 **Step 1: Create Google Cloud Project**', 
+                    value: '• Go to [Google Cloud Console](https://console.cloud.google.com/)\n• Create a new project or select existing one\n• Enable billing (free tier available)', 
+                    inline: false 
                 },
-                {
-                    name: '3️⃣ Enable YouTube Data API v3',
-                    value: '• Go to "APIs & Services" → "Library"\n• Search for "YouTube Data API v3"\n• Click on it and press "Enable"',
-                    inline: false
+                { 
+                    name: '🔑 **Step 2: Enable YouTube Data API v3**', 
+                    value: '• Go to "APIs & Services" > "Library"\n• Search for "YouTube Data API v3"\n• Click "Enable"', 
+                    inline: false 
                 },
-                {
-                    name: '4️⃣ Create API Key',
-                    value: '• Go to "APIs & Services" → "Credentials"\n• Click "Create Credentials" → "API Key"\n• Copy the generated key',
-                    inline: false
+                { 
+                    name: '🎫 **Step 3: Create API Key**', 
+                    value: '• Go to "APIs & Services" > "Credentials"\n• Click "Create Credentials" > "API Key"\n• Copy your API key', 
+                    inline: false 
                 },
-                {
-                    name: '5️⃣ Secure Your Key (Recommended)',
-                    value: '• Click on your API key to edit it\n• Under "Application restrictions" select "None" or configure as needed\n• Under "API restrictions" select "Restrict key" and choose "YouTube Data API v3"',
-                    inline: false
+                { 
+                    name: '🔒 **Step 4: Secure Your Key (Optional)**', 
+                    value: '• Click on your API key to edit\n• Add application restrictions\n• Restrict to YouTube Data API v3 only', 
+                    inline: false 
                 },
-                {
-                    name: '6️⃣ Add to Bot',
-                    value: '• Use `/youtube setup apikey:YOUR_API_KEY_HERE`\n• The bot will test and save your key securely',
-                    inline: false
+                { 
+                    name: '⚙️ **Step 5: Add to Bot**', 
+                    value: '• Use `/youtube setup apikey:YOUR_KEY`\n• Optionally add a name and daily limit\n• Switch to hybrid mode: `/youtubemode switch default`', 
+                    inline: false 
+                },
+                { 
+                    name: '📊 **Current Setup**', 
+                    value: `Mode: **${currentMode}**\nUse \`/youtube status\` to check requirements`, 
+                    inline: false 
                 }
-            );
+            )
+            .setFooter({ text: 'Need help? Contact your server administrator' })
+            .setTimestamp();
 
         const row = new ActionRowBuilder()
             .addComponents(
                 new ButtonBuilder()
                     .setLabel('Google Cloud Console')
                     .setStyle(ButtonStyle.Link)
-                    .setURL('https://console.cloud.google.com'),
+                    .setURL('https://console.cloud.google.com/'),
                 new ButtonBuilder()
-                    .setLabel('YouTube API Documentation')
+                    .setLabel('YouTube API Docs')
                     .setStyle(ButtonStyle.Link)
-                    .setURL('https://developers.google.com/youtube/v3')
+                    .setURL('https://developers.google.com/youtube/v3/getting-started')
             );
 
-        const warningEmbed = new EmbedBuilder()
-            .setColor('#ffa500')
-            .setTitle('⚠️ Important Notes')
-            .addFields(
-                { name: '🔒 Security', value: 'Never share your API key publicly. The bot stores it securely and only uses it for YouTube requests.', inline: false },
-                { name: '📊 Quota Limits', value: 'YouTube API has daily quota limits (usually 10,000 units). Monitor usage with `/youtube stats`.', inline: false },
-                { name: '💰 Costs', value: 'YouTube Data API v3 is free for most use cases, but check Google Cloud pricing for high usage.', inline: false },
-                { name: '🚀 Benefits', value: 'Using API keys bypasses bot detection issues and provides more reliable music playback.', inline: false }
-            );
-
-        await interaction.reply({ 
-            embeds: [embed, warningEmbed], 
-            components: [row], 
-            ephemeral: true 
-        });
+        await interaction.editReply({ embeds: [embed], components: [row] });
     },
 
-    // Helper method to create quota usage bar
-    createQuotaBar(used, total) {
-        const percentage = (used / total) * 100;
-        const barLength = 20;
-        const filledLength = Math.round((percentage / 100) * barLength);
-        const emptyLength = barLength - filledLength;
+    async handleList(interaction) {
+        await interaction.deferReply({ ephemeral: true });
+
+        const keys = youtubeApiManager.listApiKeys();
         
-        const filledBar = '█'.repeat(filledLength);
-        const emptyBar = '░'.repeat(emptyLength);
-        
-        return `\`${filledBar}${emptyBar}\` ${percentage.toFixed(1)}%`;
+        if (keys.length === 0) {
+            const embed = new EmbedBuilder()
+                .setColor('#ffa500')
+                .setTitle('🔑 API Keys List')
+                .setDescription('No API keys configured yet.')
+                .addFields(
+                    { name: '🚀 Get Started', value: 'Use `/youtube setup` to add the first API key', inline: false }
+                );
+            
+            return interaction.editReply({ embeds: [embed] });
+        }
+
+        const embed = new EmbedBuilder()
+            .setColor('#0099ff')
+            .setTitle('🔑 Configured API Keys')
+            .setDescription(`Total: ${keys.length} key(s)`);
+
+        keys.forEach((key, index) => {
+            const status = key.isActive ? '✅ Active' : '❌ Failed';
+            const dailyUsage = key.usage || 0;
+            const usagePercent = ((dailyUsage / key.dailyLimit) * 100).toFixed(1);
+            
+            embed.addFields({
+                name: `${index + 1}. ${key.name}`,
+                value: `**ID:** \`${key.id}\`\n**Status:** ${status}\n**Usage:** ${dailyUsage.toLocaleString()}/${key.dailyLimit.toLocaleString()} (${usagePercent}%)\n**Owner:** <@${key.owner}>\n**Added:** <t:${Math.floor(new Date(key.createdAt).getTime() / 1000)}:R>`,
+                inline: false
+            });
+        });
+
+        embed.setFooter({ text: 'Use /youtube remove to delete a key' });
+
+        await interaction.editReply({ embeds: [embed] });
+    },
+
+    async handleRemove(interaction) {
+        const keyId = interaction.options.getString('keyid');
+        await interaction.deferReply({ ephemeral: true });
+
+        try {
+            const result = youtubeApiManager.removeApiKey(keyId);
+            
+            if (result.success) {
+                const embed = new EmbedBuilder()
+                    .setColor('#00ff00')
+                    .setTitle('✅ API Key Removed')
+                    .setDescription(`Successfully removed API key: **${result.removedKey.name}**`)
+                    .addFields(
+                        { name: '🆔 Key ID', value: keyId, inline: true },
+                        { name: '👤 Owner', value: `<@${result.removedKey.owner}>`, inline: true },
+                        { name: '🔢 Remaining Keys', value: result.remainingKeys.toString(), inline: true }
+                    )
+                    .setTimestamp();
+
+                await interaction.editReply({ embeds: [embed] });
+            } else {
+                const embed = new EmbedBuilder()
+                    .setColor('#ff0000')
+                    .setTitle('❌ Key Not Found')
+                    .setDescription(`No API key found with ID: \`${keyId}\``)
+                    .addFields(
+                        { name: '💡 Tip', value: 'Use `/youtube list` to see all configured API keys', inline: false }
+                    );
+
+                await interaction.editReply({ embeds: [embed] });
+            }
+        } catch (error) {
+            await interaction.editReply('❌ Failed to remove API key. Please try again.');
+        }
     }
 };

@@ -1,0 +1,14 @@
+{
+  "mode": "proxy",
+  "description": "Proxy Mode - Auto-cookie with SOCKS5 proxy rotation",
+  "lastUpdated": "2025-07-15T20:00:59.667Z",
+  "updatedBy": "stowe#0",
+  "availableModes": {
+    "default": "Default Mode - Auto fallback (cookies → legacy → API)",
+    "api": "API Mode - YouTube API only",
+    "legacy": "Legacy Mode - Default method only (no cookies)",
+    "auto-cookie": "Auto Cookie Mode - Auto-generated cookies only",
+    "custom-cookie": "Custom Cookie Mode - User-provided cookies only",
+    "proxy": "Proxy Mode - Auto-cookie with SOCKS5 proxy rotation"
+  }
+}

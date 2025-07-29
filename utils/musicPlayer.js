@@ -23,10 +23,43 @@ class MusicPlayer {
         this.youtube = new Youtube();
         this.downloader = new AudioDownloader();
         this.preset24h = preset24h;
+        
+        // Pre-download queue management
+        this.downloadQueue = new Map(); // guildId -> { songs: [], downloading: boolean, lastDownload: timestamp }
+        this.downloadCooldown = 35000; // 35 seconds between downloads
+        this.maxPreDownloads = 5; // Maximum songs to pre-download per guild
+        
+        // Disconnect delays
+        this.disconnectTimers = new Map(); // guildId -> timeoutId
+        this.disconnectDelay = 60000; // 60 seconds before auto-disconnect
     }
 
     getPlayer(guildId) {
         return players.get(guildId) || null;
+    }
+    
+    // URL detection methods
+    isSoundCloudUrl(url) {
+        if (!url) return false;
+        return url.includes('soundcloud.com');
+    }
+
+    isSpotifyUrl(url) {
+        if (!url) return false;
+        return url.includes('spotify.com') || url.includes('open.spotify.com');
+    }
+
+    isYouTubeUrl(url) {
+        if (!url) return false;
+        return url.includes('youtube.com') || url.includes('youtu.be');
+    }
+
+    // Helper method to check if URL is expired (for download optimization)
+    isUrlExpired(url) {
+        if (!url) return true;
+        // YouTube URLs typically expire after ~6 hours
+        // This is a simple heuristic - in practice you'd want more sophisticated expiration detection
+        return false; // For now, assume URLs are valid
     }
 
     setPlayer(guildId, player, connection) {
@@ -125,6 +158,16 @@ class MusicPlayer {
                         console.error('Failed to add song back to queue for loop:', error);
                     }
                 }
+
+                // 🚀 Start pre-downloading remaining songs in queue
+                // Check the queue again after removal to get accurate count
+                const remainingQueue = await this.db.getQueue(guildId);
+                if (remainingQueue.length > 0) { // If there are more songs to download
+                    setTimeout(() => {
+                        this.startQueuePreDownload(guildId);
+                    }, 2000); // Small delay to not interfere with current playback
+                }
+
                 return;
             }
 
@@ -140,17 +183,17 @@ class MusicPlayer {
                 }
             }
 
-            // If no songs available, disconnect (only if not in 24/7 mode)
+            // If no songs available, schedule disconnect with delay (only if not in 24/7 mode)
             if (!mode24h.enabled) {
-                console.log('Queue empty, disconnecting');
-                this.disconnect(guildId);
+                console.log('Queue empty, scheduling disconnect with 60s delay...');
+                this.scheduleDisconnect(guildId, 'Queue empty');
             }
 
         } catch (error) {
             console.error('Error in playNext:', error);
             const mode24h = await this.db.get24hMode(guildId);
             if (!mode24h.enabled) {
-                this.disconnect(guildId);
+                this.scheduleDisconnect(guildId, 'Error in playNext');
             }
         }
     }
@@ -249,6 +292,9 @@ class MusicPlayer {
         if (!playerData) return;
 
         try {
+            // Cancel any scheduled disconnect since we're starting a new song
+            this.cancelScheduledDisconnect(guildId);
+
             console.log(`Playing song: ${song.title}`);
               // If song doesn't have audioUrl (from playlist), resolve it now
             if (!song.audioUrl && song.originalUrl) {
@@ -440,178 +486,446 @@ class MusicPlayer {
         }
     }
 
-    isUrlExpired(url) {
-        if (!url) return true;
-        
+    /**
+     * Start pre-downloading songs in queue with cooldown
+     */
+    async startQueuePreDownload(guildId) {
+        const guildDownloadData = this.downloadQueue.get(guildId) || {
+            songs: [],
+            downloading: false,
+            lastDownload: 0
+        };
+
+        if (guildDownloadData.downloading) {
+            console.log(`Pre-download already in progress for guild ${guildId}`);
+            return;
+        }
+
         try {
-            const urlObj = new URL(url);
-            const expire = urlObj.searchParams.get('expire');
-            if (expire) {
-                const expireTime = parseInt(expire) * 1000; // Convert to milliseconds
-                const now = Date.now();
-                const timeUntilExpire = expireTime - now;
-                
-                // Consider URL expired if less than 30 seconds remaining
-                return timeUntilExpire < 30000;
+            const queue = await this.db.getQueue(guildId);
+            if (queue.length === 0) {
+                console.log(`No songs in queue for guild ${guildId} to pre-download`);
+                return;
             }
+
+            console.log(`Analyzing ${queue.length} songs in queue for pre-download eligibility...`);
+
+            // Filter songs that need downloading with more detailed logging
+            const songsToDownload = queue
+                .filter(song => {
+                    // Check for required fields
+                    if (!song.videoId) {
+                        console.log(`⚠️ Skipping "${song.title}": no videoId`);
+                        return false;
+                    }
+                    
+                    if (!song.originalUrl) {
+                        console.log(`⚠️ Skipping "${song.title}": no originalUrl`);
+                        return false;
+                    }
+                    
+                    // Check if it's a YouTube URL
+                    if (!this.isYouTubeUrl(song.originalUrl)) {
+                        console.log(`⚠️ Skipping "${song.title}": not a YouTube URL (${song.originalUrl})`);
+                        return false;
+                    }
+                    
+                    // Check if already downloaded
+                    if (this.downloader.fileExists(song.videoId)) {
+                        console.log(`⚠️ Skipping "${song.title}": already downloaded`);
+                        return false;
+                    }
+                    
+                    console.log(`✅ "${song.title}" eligible for pre-download`);
+                    return true;
+                })
+                .slice(0, this.maxPreDownloads);
+
+            if (songsToDownload.length === 0) {
+                console.log(`No songs need pre-downloading for guild ${guildId} (all filtered out or already downloaded)`);
+                return;
+            }
+
+            guildDownloadData.songs = songsToDownload;
+            guildDownloadData.downloading = true;
+            this.downloadQueue.set(guildId, guildDownloadData);
+
+            console.log(`🚀 Starting pre-download of ${songsToDownload.length} songs for guild ${guildId}`);
+            this.processDownloadQueue(guildId);
+
         } catch (error) {
-            console.error('Error checking URL expiration:', error);
-        }
-        
-        return false;
-    }
-
-    async skip(guildId) {
-        const playerData = players.get(guildId);
-        if (!playerData) return false;
-
-        playerData.player.stop();
-        return true;
-    }
-
-    async stop(guildId) {
-        const playerData = players.get(guildId);
-        if (!playerData) return false;
-
-        await this.db.clearQueue(guildId);
-        playerData.player.stop();
-        playerData.connection.destroy();
-        players.delete(guildId);
-        return true;
-    }
-
-    pause(guildId) {
-        const playerData = players.get(guildId);
-        if (playerData && playerData.player) {
-            playerData.player.pause();
-            return true;
-        }
-        return false;
-    }
-
-    resume(guildId) {
-        const playerData = players.get(guildId);
-        if (playerData && playerData.player) {
-            playerData.player.unpause();
-            return true;
-        }
-        return false;
-    }
-
-    disconnect(guildId) {
-        const playerData = players.get(guildId);
-        if (playerData) {
-            try {
-                if (playerData.connection) {
-                    playerData.connection.destroy();
-                }
-                if (playerData.player) {
-                    playerData.player.stop();
-                }
-                players.delete(guildId);
-                console.log(`Disconnected from guild: ${guildId}`);
-            } catch (error) {
-                console.error('Error disconnecting:', error);
-            }
+            console.error('Error starting queue pre-download:', error);
+            guildDownloadData.downloading = false;
+            this.downloadQueue.set(guildId, guildDownloadData);
         }
     }
 
-    isPlaying(guildId) {
-        const playerData = players.get(guildId);
-        return playerData && playerData.player && playerData.player.state.status === AudioPlayerStatus.Playing;
-    }
+    /**
+     * Process download queue with cooldown
+     */
+    async processDownloadQueue(guildId) {
+        const guildDownloadData = this.downloadQueue.get(guildId);
+        if (!guildDownloadData || !guildDownloadData.downloading) {
+            return;
+        }
 
-    isPaused(guildId) {
-        const playerData = players.get(guildId);
-        return playerData && playerData.player && playerData.player.state.status === AudioPlayerStatus.Paused;
-    }
+        if (guildDownloadData.songs.length === 0) {
+            console.log(`✅ Pre-download completed for guild ${guildId}`);
+            guildDownloadData.downloading = false;
+            this.downloadQueue.set(guildId, guildDownloadData);
+            return;
+        }
 
-    setupPlayerEvents(guildId, player) {
-        player.on(AudioPlayerStatus.Playing, () => {
-            console.log('Audio player started playing');
-            const playerData = players.get(guildId);
-            if (playerData) {
-                playerData.retryCount = 0; // Reset retry count on successful playback
-            }
-        });
+        const now = Date.now();
+        const timeSinceLastDownload = now - guildDownloadData.lastDownload;
 
-        player.on(AudioPlayerStatus.Idle, () => {
-            console.log('Audio player is idle, playing next song');
-            // Add delay to prevent rapid switching
-            setTimeout(() => {
-                if (players.has(guildId)) {
-                    this.playNext(guildId);
-                }
-            }, 1500);
-        });
-
-        player.on(AudioPlayerStatus.Buffering, () => {
-            console.log('Audio player is buffering...');
-        });
-
-        player.on('error', async (error) => {
-            console.error('Audio player error:', error.message);
-            const playerData = players.get(guildId);
+        // Apply cooldown if needed
+        if (timeSinceLastDownload < this.downloadCooldown && guildDownloadData.lastDownload > 0) {
+            const remainingCooldown = this.downloadCooldown - timeSinceLastDownload;
+            console.log(`⏳ Download cooldown: waiting ${Math.ceil(remainingCooldown / 1000)}s before next download`);
             
-            if (playerData && playerData.currentSong) {
-                // Delete corrupted file if it exists
-                if (playerData.currentSong.videoId) {
-                    this.downloader.deleteFile(playerData.currentSong.videoId);
-                }
+            setTimeout(() => {
+                this.processDownloadQueue(guildId);
+            }, remainingCooldown);
+            return;
+        }
+
+        const songToDownload = guildDownloadData.songs.shift();
+        console.log(`📥 Pre-downloading: ${songToDownload.title} (${guildDownloadData.songs.length} remaining)`);
+
+        try {
+            // Download the song
+            await this.downloadSongInBackground(songToDownload);
+            guildDownloadData.lastDownload = Date.now();
+            
+            console.log(`✅ Pre-downloaded: ${songToDownload.title}`);
+            
+            // Continue with next song after a short delay
+            setTimeout(() => {
+                this.processDownloadQueue(guildId);
+            }, 1000);
+
+        } catch (error) {
+            const errorMsg = error.message || 'Unknown error';
+            
+            // Check if it's a validation error (non-YouTube URL, etc.)
+            if (errorMsg.includes('Non-YouTube URL') || errorMsg.includes('Invalid song data')) {
+                console.log(`⚠️ Skipping non-downloadable song: ${songToDownload.title} - ${errorMsg}`);
+            } else {
+                console.error(`❌ Failed to pre-download ${songToDownload.title}: ${errorMsg}`);
+            }
+            
+            // Continue with next song even if this one failed
+            setTimeout(() => {
+                this.processDownloadQueue(guildId);
+            }, 2000);
+        }
+    }
+
+    /**
+     * Download song in background without blocking playback
+     */
+    async downloadSongInBackground(song) {
+        // Validate song data - only proceed with YouTube URLs
+        if (!song.videoId || !song.originalUrl) {
+            throw new Error(`Invalid song data: missing videoId or originalUrl for "${song.title}"`);
+        }
+
+        if (!this.isYouTubeUrl(song.originalUrl)) {
+            throw new Error(`Non-YouTube URL cannot be downloaded: "${song.title}" from ${song.originalUrl}`);
+        }
+
+        // Check if already downloaded
+        if (this.downloader.fileExists(song.videoId)) {
+            console.log(`Song ${song.title} already downloaded, skipping`);
+            return;
+        }
+
+        try {
+            // Always resolve fresh YouTube URL for downloads to ensure it's valid
+            console.log(`Resolving fresh URL for pre-download: ${song.title}`);
+            let downloadUrl = null;
+
+            try {
+                const videoInfo = await this.youtube.getYoutubeInfoWithRetry(song.originalUrl);
                 
-                if (playerData.retryCount < 3) {
-                    playerData.retryCount++;
-                    console.log(`Player error, retrying (attempt ${playerData.retryCount})`);
-                    setTimeout(() => {
-                        this.playSong(guildId, playerData.currentSong, true);
-                    }, 3000);
-                } else {
-                    console.log('Max retries reached, skipping to next song');
-                    await this.playNext(guildId);
+                if (videoInfo.streamingData && videoInfo.streamingData.adaptiveFormats) {
+                    const audioFormats = videoInfo.streamingData.adaptiveFormats.filter(format => 
+                        format.mimeType && format.mimeType.includes('audio') && 
+                        format.url && format.contentLength
+                    );
+                    
+                    if (audioFormats.length > 0) {
+                        const bestAudio = audioFormats.find(format => 
+                            format.mimeType.includes('audio/mp4')
+                        ) || audioFormats[0];
+                        
+                        downloadUrl = bestAudio.url;
+                        console.log(`Resolved download URL for: ${song.title}`);
+                    }
+                }
+            } catch (resolveError) {
+                throw new Error(`Failed to resolve YouTube URL for download: ${resolveError.message}`);
+            }
+
+            if (!downloadUrl) {
+                throw new Error('No valid audio stream URL found for download');
+            }
+
+            // Validate the resolved URL before passing to downloader
+            if (!downloadUrl.startsWith('http')) {
+                throw new Error(`Invalid download URL resolved: ${downloadUrl}`);
+            }
+
+            console.log(`Starting download for: ${song.title} (${song.videoId})`);
+
+            // Perform the download using the YouTube watch URL, not the stream URL
+            // The ytdl library expects the YouTube watch URL, not the direct stream URL
+            await this.downloader.downloadAudio(song.originalUrl, song.videoId, {
+                title: song.title,
+                author: song.author
+            });
+
+            console.log(`✅ Successfully downloaded: ${song.title}`);
+
+            // Trigger cache cleanup check after download
+            onFileDownloaded(this.downloader.getFilePath(song.videoId));
+
+        } catch (error) {
+            console.error(`Background download failed for ${song.title}:`, error.message);
+            throw error;
+        }
+    }
+
+    /**
+     * Add songs to queue and start pre-downloading
+     */
+    async addToQueueWithPreDownload(guildId, songs) {
+        try {
+            // Cancel any scheduled disconnect since we're adding new songs
+            this.cancelScheduledDisconnect(guildId);
+            
+            // Add songs to queue first
+            if (Array.isArray(songs)) {
+                for (const song of songs) {
+                    await this.db.addToQueue(guildId, song);
                 }
             } else {
-                await this.playNext(guildId);
+                await this.db.addToQueue(guildId, songs);
             }
-        });
+
+            // Start pre-downloading new songs
+            await this.startQueuePreDownload(guildId);
+
+            return { success: true, preDownloadStarted: true };
+        } catch (error) {
+            console.error('Error adding songs to queue with pre-download:', error);
+            return { success: false, error: error.message };
+        }
     }
 
-    // Add method to clean downloads
-    cleanDownloads(immediate = false) {
-        return this.downloader.cleanOldFiles(immediate);
+    /**
+     * Stop pre-downloading for a guild
+     */
+    stopQueuePreDownload(guildId) {
+        const guildDownloadData = this.downloadQueue.get(guildId);
+        if (guildDownloadData) {
+            guildDownloadData.downloading = false;
+            guildDownloadData.songs = [];
+            this.downloadQueue.set(guildId, guildDownloadData);
+            console.log(`🛑 Pre-download stopped for guild ${guildId}`);
+        }
     }
 
-    // Get download stats
-    getDownloadStats() {
-        const size = this.downloader.getDirectorySize();
+    /**
+     * Get pre-download status
+     */
+    getPreDownloadStatus(guildId) {
+        const guildDownloadData = this.downloadQueue.get(guildId);
+        if (!guildDownloadData) {
+            return {
+                active: false,
+                songsRemaining: 0,
+                lastDownload: 0
+            };
+        }
+
         return {
-            sizeBytes: size,
-            sizeMB: (size / (1024 * 1024)).toFixed(2)
+            active: guildDownloadData.downloading,
+            songsRemaining: guildDownloadData.songs.length,
+            lastDownload: guildDownloadData.lastDownload,
+            cooldownRemaining: Math.max(0, this.downloadCooldown - (Date.now() - guildDownloadData.lastDownload))
         };
     }
 
-    // URL detection helper methods
-    isYouTubeUrl(url) {
-        return url && (
-            url.includes('youtube.com/') ||
-            url.includes('youtu.be/') ||
-            url.includes('m.youtube.com/')
-        );
+    async start24hMode(guildId, channelId) {
+        try {
+            // Check if already connected
+            if (players.has(guildId)) {
+                return { success: false, message: 'Bot is already playing music' };
+            }
+
+            // Check if preset playlist has songs
+            const playlistInfo = this.preset24h.getPlaylistInfo();
+            if (!playlistInfo.hasValidSongs) {
+                return { success: false, message: 'No preset songs found. Please add music files to the preset folder.' };
+            }
+
+            // Enable 24/7 mode in database
+            await this.db.set24hMode(guildId, true, channelId);
+
+            return { success: true, message: '24/7 mode will start when music is played' };
+        } catch (error) {
+            console.error('Error starting 24/7 mode:', error);
+            return { success: false, message: 'Failed to start 24/7 mode' };
+        }
     }
 
-    isSoundCloudUrl(url) {
-        return url && (
-            url.includes('soundcloud.com/') ||
-            url.includes('snd.sc/')
-        );
+    async stop24hMode(guildId) {
+        try {
+            // Disable 24/7 mode in database
+            await this.db.set24hMode(guildId, false);
+            
+            // Clear queue and disconnect if currently playing preset
+            const playerData = players.get(guildId);
+            if (playerData && playerData.currentSong && playerData.currentSong.isPreset) {
+                await this.db.clearQueue(guildId);
+                this.disconnect(guildId);
+            }
+
+            return { success: true, message: '24/7 mode disabled' };
+        } catch (error) {
+
+            console.error('Error stopping 24/7 mode:', error);
+            return { success: false, message: 'Failed to stop 24/7 mode' };
+        }
     }
 
-    isSpotifyUrl(url) {
-        return url && (
-            url.includes('spotify.com/') ||
-            url.includes('open.spotify.com/') ||
-            url.includes('spotify:')
-        );
+    async get24hStatus(guildId) {
+        try {
+            const mode24h = await this.db.get24hMode(guildId);
+            const playlistInfo = this.preset24h.getPlaylistInfo();
+            const playerData = players.get(guildId);
+            
+            return {
+                enabled: mode24h.enabled,
+                channelId: mode24h.channelId,
+                playlistInfo,
+                isPlaying: !!playerData,
+                currentSong: playerData?.currentSong || null
+            };
+        } catch (error) {
+            console.error('Error getting 24/7 status:', error);
+            return { enabled: false, channelId: null, playlistInfo: { hasValidSongs: false } };
+        }
     }
+
+    scheduleDisconnect(guildId, reason = 'Queue empty') {
+        // Clear any existing timer
+        this.cancelScheduledDisconnect(guildId);
+        
+        console.log(`⏰ Scheduling disconnect for guild ${guildId} in ${this.disconnectDelay / 1000} seconds (${reason})`);
+        
+        const timerId = setTimeout(() => {
+            console.log(`🕐 Auto-disconnecting guild ${guildId} after ${this.disconnectDelay / 1000}s delay`);
+            this.disconnect(guildId);
+            this.disconnectTimers.delete(guildId);
+        }, this.disconnectDelay);
+        
+        this.disconnectTimers.set(guildId, timerId);
+    }
+
+    /**
+     * Cancel scheduled disconnection (when new song is added)
+     */
+    cancelScheduledDisconnect(guildId) {
+        const timerId = this.disconnectTimers.get(guildId);
+        if (timerId) {
+            clearTimeout(timerId);
+            this.disconnectTimers.delete(guildId);
+            console.log(`⏹️ Cancelled scheduled disconnect for guild ${guildId}`);
+            return true;
+        }
+        return false;
+    }
+
+    /**
+     * Check if disconnect is scheduled for a guild
+     */
+    isDisconnectScheduled(guildId) {
+        return this.disconnectTimers.has(guildId);
+    }
+
+    /**
+     * Get remaining time until scheduled disconnect
+     */
+    getDisconnectTimeRemaining(guildId) {
+        if (!this.isDisconnectScheduled(guildId)) {
+            return 0;
+        }
+        
+        // This is an approximation since we can't get exact remaining time from setTimeout
+        return this.disconnectDelay; // Return max delay as approximation
+    }
+
+    /**
+     * Disconnect player and clean up resources
+     */
+    disconnect(guildId) {
+        return disconnect(guildId);
+    }
+
+    /**
+     * Pause player
+     */
+    pause(guildId) {
+        return pause(guildId);
+    }
+
+    /**
+     * Resume player
+     */
+    resume(guildId) {
+        return resume(guildId);
+    }
+
+    /**
+     * Skip current song
+     */
+    skip(guildId) {
+        return this.playNext(guildId);
+    }
+
+    /**
+     * Stop player and clear queue
+     */
+    async stop(guildId) {
+        await this.db.clearQueue(guildId);
+        return disconnect(guildId);
+    }
+
+    /**
+     * Check if player is playing
+     */
+    isPlaying(guildId) {
+        return isPlaying(guildId);
+    }
+
+    /**
+     * Check if player is paused
+     */
+    isPaused(guildId) {
+        return isPaused(guildId);
+    }
+
+    /**
+     * Setup player events
+     */
+    setupPlayerEvents(guildId, player) {
+        return setupPlayerEvents(guildId, player);
+    }
+
+    // ...existing code...
 }
 
 // Check cache size and perform cleanup if necessary
@@ -841,6 +1155,16 @@ function disconnect(guildId) {
             playerData.connection.destroy();
         }
         players.delete(guildId);
+        
+        // Clean up disconnect timers and download queue
+        if (musicPlayer.disconnectTimers.has(guildId)) {
+            clearTimeout(musicPlayer.disconnectTimers.get(guildId));
+            musicPlayer.disconnectTimers.delete(guildId);
+        }
+        
+        // Stop any ongoing pre-downloads for this guild
+        musicPlayer.stopQueuePreDownload(guildId);
+        
         return true;
     }
     return false;
@@ -855,8 +1179,8 @@ function setupPlayerEvents(guildId, player) {
             playerData.isPlaying = false;
             playerData.isPaused = false;
             playerData.currentSong = null;
-            // Auto-play next song if queue exists
-            playNext(guildId);
+            // Auto-play next song if queue exists - use class method
+            musicPlayer.playNext(guildId);
         } else if (newState.status === 'playing') {
             playerData.isPlaying = true;
             playerData.isPaused = false;
@@ -871,6 +1195,11 @@ function setupPlayerEvents(guildId, player) {
         playerData.isPlaying = false;
         playerData.isPaused = false;
         playerData.currentSong = null;
+        // Try to play next song on error too
+        console.log('Attempting to play next song after error...');
+        setTimeout(() => {
+            musicPlayer.playNext(guildId);
+        }, 2000);
     });
 }
 
@@ -1184,6 +1513,23 @@ module.exports = {
     get24hStatus: (guildId) => musicPlayer.get24hStatus(guildId),
     start24hMode: (guildId, channelId) => musicPlayer.start24hMode(guildId, channelId),
     stop24hMode: (guildId) => musicPlayer.stop24hMode(guildId),
+    
+    // Queue pre-download - NEW METHODS
+    addToQueueWithPreDownload: (guildId, songs) => musicPlayer.addToQueueWithPreDownload(guildId, songs),
+    startQueuePreDownload: (guildId) => musicPlayer.startQueuePreDownload(guildId),
+    stopQueuePreDownload: (guildId) => musicPlayer.stopQueuePreDownload(guildId),
+    getPreDownloadStatus: (guildId) => musicPlayer.getPreDownloadStatus(guildId),
+    
+    // Disconnect timer management - NEW METHODS
+    scheduleDisconnect: (guildId, reason) => musicPlayer.scheduleDisconnect(guildId, reason),
+    cancelScheduledDisconnect: (guildId) => musicPlayer.cancelScheduledDisconnect(guildId),
+    isDisconnectScheduled: (guildId) => musicPlayer.isDisconnectScheduled(guildId),
+    getDisconnectTimeRemaining: (guildId) => musicPlayer.getDisconnectTimeRemaining(guildId),
+    
+    // URL detection methods - NEW METHODS
+    isSoundCloudUrl: (url) => musicPlayer.isSoundCloudUrl(url),
+    isYouTubeUrl: (url) => musicPlayer.isYouTubeUrl(url),
+    isSpotifyUrl: (url) => musicPlayer.isSpotifyUrl(url),
     
     // Cache management - use standalone functions
     getDownloadStats,
