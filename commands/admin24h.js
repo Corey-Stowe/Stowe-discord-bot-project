@@ -1,7 +1,8 @@
 const { SlashCommandBuilder, EmbedBuilder } = require('discord.js');
 const preset24h = require('../utils/preset24h.js');
 const musicPlayer = require('../utils/musicPlayer.js');
-const CacheManager = require('../src/utils/cacheManager');
+const CacheManager = require('../utils/cacheManager');
+const logger = require('../utils/logger');
 
 module.exports = {
     data: new SlashCommandBuilder()
@@ -69,7 +70,7 @@ module.exports = {
                     break;
             }
         } catch (error) {
-            console.error('Error in admin24h command:', error);
+            logger.error('MUSIC', `Error in admin24h command: ${error.message}`);
             await interaction.editReply('❌ An error occurred while executing the command.');
         }
     },

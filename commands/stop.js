@@ -1,6 +1,7 @@
 const { SlashCommandBuilder } = require('discord.js');
 const musicPlayer = require('../utils/musicPlayer.js');
 const i18n = require('../utils/i18n.js');
+const logger = require('../utils/logger');
 
 module.exports = {
     data: new SlashCommandBuilder()
@@ -41,11 +42,11 @@ module.exports = {
                 await interaction.editReply(i18n.translate(lang, 'music.stop_failed') || 'Failed to stop the music.');
             }
         } catch (error) {
-            console.error('Error in stop command:', error);
+            logger.error('MUSIC', `Error in stop command: ${error.message}`);
             try {
                 await interaction.editReply(i18n.translate(lang, 'common.error') || 'An error occurred while stopping the music.');
             } catch (replyError) {
-                console.error('Failed to send error reply:', replyError);
+                logger.error('MUSIC', `Failed to send stop error reply: ${replyError.message}`);
             }
         }
     },

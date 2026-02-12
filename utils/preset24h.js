@@ -1,6 +1,6 @@
 const fs = require('fs');
 const path = require('path');
-const { createAudioResource } = require('@discordjs/voice');
+const logger = require('./logger');
 
 class Preset24h {
     constructor() {
@@ -183,23 +183,17 @@ class Preset24h {
         }
     }
 
-    createAudioResource(song) {
-        try {
-            if (!fs.existsSync(song.filePath)) {
-                throw new Error(`Preset file not found: ${song.filePath}`);
-            }
-
-            return createAudioResource(song.filePath, {
-                inlineVolume: true,
-                metadata: {
-                    title: song.title,
-                    artist: song.author
-                }
-            });
-        } catch (error) {
-            console.error('Error creating audio resource for preset:', error);
+    /**
+     * Get the file path for a preset song (used by DisTube's DirectLink plugin).
+     * DisTube handles audio resource creation internally.
+     */
+    getFilePath(song) {
+        if (!song || !song.filePath) return null;
+        if (!fs.existsSync(song.filePath)) {
+            logger.error('MUSIC', `Preset file not found: ${song.filePath}`);
             return null;
         }
+        return song.filePath;
     }
 
     getPlaylistStats() {

@@ -297,6 +297,92 @@
       "triple_indicator": "🎯 (TRIPLE!)"
     }
   },
+  "math": {
+    "titles": {
+      "basic_calculation": "🧮 Phép tính cơ bản",
+      "derivative_calculator": "📈 Máy tính đạo hàm",
+      "quadratic_solver": "📊 Giải phương trình bậc hai",
+      "cubic_solver": "📈 Giải phương trình bậc ba",
+      "definite_integral": "🔢 Tích phân xác định (Số học)",
+      "indefinite_integral": "∫ Tích phân bất định",
+      "matrix_operations": "🔢 Phép toán ma trận",
+      "help_title": "🧮 Trợ giúp lệnh Toán học"
+    },
+    "labels": {
+      "expression": "Biểu thức",
+      "result": "Kết quả",
+      "original_function": "Hàm gốc",
+      "derivative": "Đạo hàm",
+      "variable": "Biến số",
+      "equation": "Phương trình",
+      "discriminant": "Biệt thức",
+      "solution_type": "Loại nghiệm",
+      "solutions": "Nghiệm",
+      "function": "Hàm số",
+      "operation": "Phép toán",
+      "original_matrix": "Ma trận gốc"
+    },
+    "solution_types": {
+      "two_real": "Hai nghiệm thực",
+      "one_repeated": "Một nghiệm kép",
+      "two_complex": "Hai nghiệm phức"
+    },
+    "errors": {
+      "invalid_expression": "❌ Lỗi tính biểu thức: {error}\\n\\nMẹo: Sử dụng dấu ngoặc để rõ ràng và kiểm tra cú pháp hàm.",
+      "derivative_error": "❌ Lỗi tính đạo hàm: {error}\\n\\nMẹo: Sử dụng cú pháp đúng như x^2, sin(x), exp(x), ln(x)",
+      "quadratic_zero_a": "❌ Hệ số \"a\" không thể bằng 0 cho phương trình bậc hai!",
+      "cubic_zero_a": "❌ Hệ số \"a\" không thể bằng 0 cho phương trình bậc ba!",
+      "quadratic_error": "❌ Lỗi giải phương trình bậc hai: {error}",
+      "cubic_error": "❌ Lỗi giải phương trình bậc ba: {error}\\n\\nLưu ý: Một số phương trình bậc ba có thể quá phức tạp để giải phân tích.",
+      "integral_error": "❌ Lỗi tính tích phân: {error}\\n\\nMẹo: Sử dụng các hàm đơn giản như x^n, sin(x), cos(x), exp(x), ln(x)",
+      "matrix_error": "❌ Lỗi phép toán ma trận: {error}\\n\\nMẹo: Sử dụng định dạng [[1,2],[3,4]] cho ma trận 2x2",
+      "general_error": "❌ Đã xảy ra lỗi khi xử lý bài toán. Vui lòng kiểm tra đầu vào và thử lại."
+    },
+    "footers": {
+      "help_examples": "Sử dụng /math help để xem thêm ví dụ",
+      "supported_functions": "Hỗ trợ: đa thức, hàm lượng giác, exp, ln, v.v.",
+      "quadratic_formula": "Công thức bậc hai: x = (-b ± √(b²-4ac)) / 2a",
+      "cubic_note": "Phương trình bậc ba có thể có tối đa 3 nghiệm (thực hoặc phức)",
+      "integration_note": "Lưu ý: Tích phân ký hiệu có hạn. Hãy cân nhắc sử dụng công cụ chuyên dụng cho tích phân phức tạp.",
+      "matrix_format": "Định dạng ma trận: [[1,2],[3,4]] hoặc [1,2;3,4]",
+      "mathjs_powered": "Được hỗ trợ bởi Math.js • Sử dụng dấu ngoặc cho biểu thức phức tạp"
+    },
+    "help": {
+      "description": "Máy giải toán học toàn diện",
+      "basic_calculations": {
+        "title": "📊 Phép tính cơ bản",
+        "examples": "`/math calculate expression:2+2*3`\\n`/math calculate expression:sqrt(16)+sin(pi/2)`\\n`/math calculate expression:log(100,10)`"
+      },
+      "derivatives": {
+        "title": "📈 Đạo hàm",
+        "examples": "`/math derivative function:x^2`\\n`/math derivative function:sin(x)*cos(x)`\\n`/math derivative function:exp(x^2) variable:x`"
+      },
+      "quadratic": {
+        "title": "📊 Phương trình bậc hai",
+        "examples": "`/math quadratic a:1 b:-5 c:6`\\n(Giải x² - 5x + 6 = 0)"
+      },
+      "cubic": {
+        "title": "📈 Phương trình bậc ba",
+        "examples": "`/math cubic a:1 b:0 c:-1 d:0`\\n(Giải x³ - x = 0)"
+      },
+      "integrals": {
+        "title": "∫ Tích phân",
+        "examples": "`/math integral function:x^2`\\n`/math integral function:sin(x) lower_bound:0 upper_bound:3.14159`"
+      },
+      "matrix": {
+        "title": "🔢 Phép toán ma trận",
+        "examples": "`/math matrix operation:det matrix:[[1,2],[3,4]]`\\n`/math matrix operation:inv matrix:[1,2;3,4]`"
+      },
+      "supported_functions": {
+        "title": "🔧 Hàm hỗ trợ",
+        "content": "`sin, cos, tan, asin, acos, atan`\\n`exp, ln, log, sqrt, abs`\\n`factorial (sử dụng !), combinations, permutations`"
+      },
+      "constants": {
+        "title": "🔤 Hằng số",
+        "content": "`pi, e, i (đơn vị ảo)`\\n`phi (tỷ lệ vàng)`\\n`tau (2*pi)`"
+      }
+    }
+  },
   "music": {
     "now_playing": "🎵 Đang phát",
     "added_to_queue": "📝 Đã thêm vào hàng đợi",
@@ -601,6 +687,9 @@
       "play_tai_xiu_sicbo_dice_game_for_money": "Chơi game Tài Xỉu (Sicbo) để kiếm tiền",
       "amount_to_bet": "Số tiền cược"
     },
+    "stats": {
+      "description": "Hiển thị thống kê chi tiết và chỉ số hiệu suất của người chơi"
+    },
     "gift": {
       "description": "Tạo mã quà tặng bằng số dư của bạn",
       "create_a_gift_code_using_your_balance": "Tạo mã quà tặng bằng số dư của bạn",
@@ -630,6 +719,47 @@
       "show_gift_code_redemption_history": "Hiển thị lịch sử đổi mã quà tặng",
       "show_gift_code_system_statistics": "Hiển thị thống kê hệ thống mã quà tặng",
       "clean_up_expired_gift_codes": "Dọn dẹp các mã quà tặng hết hạn"
+    },
+    "math": {
+      "description": "Giải các bài toán toán học bao gồm toán cơ bản, đạo hàm, phương trình bậc hai và nhiều hơn nữa",
+      "solve_mathematical_problems": "Giải các bài toán toán học bao gồm toán cơ bản, đạo hàm, phương trình bậc hai và nhiều hơn nữa",
+      "calculate": {
+        "description": "Thực hiện các phép tính cơ bản và đánh giá biểu thức toán học",
+        "expression": "Biểu thức toán học để tính (ví dụ: 2+2, sqrt(16), sin(pi/2))"
+      },
+      "derivative": {
+        "description": "Tính đạo hàm của một hàm số",
+        "function": "Hàm số để tính đạo hàm (ví dụ: x^2, sin(x), ln(x))",
+        "variable": "Biến để tính đạo hàm theo (mặc định: x)"
+      },
+      "quadratic": {
+        "description": "Giải phương trình bậc hai (ax² + bx + c = 0)",
+        "coefficient_a": "Hệ số a (số hạng x²)",
+        "coefficient_b": "Hệ số b (số hạng x)",
+        "coefficient_c": "Hệ số c (hằng số)"
+      },
+      "cubic": {
+        "description": "Giải phương trình bậc ba (ax³ + bx² + cx + d = 0)",
+        "coefficient_a": "Hệ số a (số hạng x³)",
+        "coefficient_b": "Hệ số b (số hạng x²)",
+        "coefficient_c": "Hệ số c (số hạng x)",
+        "coefficient_d": "Hệ số d (hằng số)"
+      },
+      "integral": {
+        "description": "Tính tích phân của một hàm số",
+        "function": "Hàm số để tính tích phân (ví dụ: x^2, sin(x), 1/x)",
+        "variable": "Biến để tích phân theo (mặc định: x)",
+        "lower_bound": "Cận dưới cho tích phân xác định (tùy chọn)",
+        "upper_bound": "Cận trên cho tích phân xác định (tùy chọn)"
+      },
+      "matrix": {
+        "description": "Thực hiện các phép toán ma trận",
+        "operation": "Phép toán ma trận cần thực hiện",
+        "matrix": "Ma trận theo định dạng [[1,2],[3,4]] hoặc [1,2;3,4]"
+      },
+      "help": {
+        "description": "Hiển thị trợ giúp và ví dụ cho lệnh toán học"
+      }
     }
   }
 }

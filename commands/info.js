@@ -13,7 +13,7 @@ module.exports = {
 
         try {
             // Bot information
-            const botVersion = '2.5.1'; // Updated for enhanced YouTube integration
+            const botVersion = '1.0-free';
             const author = 'stowe';
             const repo = 'https://github.com/Corey-Stowe/Stowe-discord-bot-project';
             const issuesUrl = 'https://github.com/Corey-Stowe/Stowe-discord-bot-project/issues';
@@ -45,40 +45,6 @@ module.exports = {
                 console.log('Queue stats not available:', error.message);
             }
 
-            // YouTube configuration stats
-            let youtubeConfigStats = {
-                apiEnabled: false,
-                keysAvailable: 0,
-                quotaUsed: 0,
-                totalQuota: 0,
-                cookiesConfigured: false,
-                currentMethod: 'default'
-            };
-
-            try {
-                const youtubeApiManager = require('../utils/youtubeApiManager');
-                const cookieManager = require('../utils/cookieManager');
-                
-                const apiStats = youtubeApiManager.getApiKeyStats();
-                const hasValidCookies = await cookieManager.hasValidCookies();
-                
-                youtubeConfigStats = {
-                    apiEnabled: youtubeApiManager.isApiEnabled(),
-                    keysAvailable: apiStats.totalKeys,
-                    activeKeys: apiStats.activeKeys,
-                    quotaUsed: apiStats.totalQuotaUsed,
-                    totalQuota: apiStats.totalDailyLimit,
-                    cookiesConfigured: hasValidCookies,
-                    currentMethod: hasValidCookies 
-                        ? 'cookies' 
-                        : youtubeApiManager.isApiEnabled() && process.env.YOUTUBE_PREFER_API === 'true' 
-                            ? 'api' 
-                            : 'default'
-                };
-            } catch (error) {
-                console.log('YouTube configuration stats not available:', error.message);
-            }
-
             // Format uptime
             const formatUptime = (seconds) => {
                 const days = Math.floor(seconds / 86400);
@@ -99,19 +65,19 @@ module.exports = {
             // Format CPU load average
             const formatCpuLoad = (load) => {
                 const percentage = (load * 100).toFixed(1);
-                let status = '🟢';
-                if (load > 0.7) status = '🔴';
-                else if (load > 0.5) status = '🟡';
+                let status = 'OK';
+                if (load > 0.7) status = 'HIGH';
+                else if (load > 0.5) status = 'MODERATE';
                 return `${status} ${percentage}%`;
             };
 
             const embed = new EmbedBuilder()
                 .setColor('#00d4ff')
-                .setTitle('🤖 Stowe Discord Bot')
-                .setDescription(`**Version:** ${botVersion}\n**Author:** ${author}`)
+                .setTitle('StoweBot Free')
+                .setDescription(`**Version:** ${botVersion}\n**Author:** ${author}\nOpen-source Discord music bot`)
                 .addFields(
                     {
-                        name: '📊 Bot Statistics',
+                        name: 'Bot Statistics',
                         value: `**Servers:** ${guildCount}\n` +
                                `**Users:** ${userCount}\n` +
                                `**Channels:** ${channelCount}\n` +
@@ -119,14 +85,14 @@ module.exports = {
                         inline: true
                     },
                     {
-                        name: '🎵 Music System',
+                        name: 'Music System',
                         value: `**Active Queues:** ${queueStats.totalQueues}\n` +
                                `**Queued Songs:** ${queueStats.totalSongs}\n` +
                                `**Voice Connections:** ${interaction.client.voice?.connections?.size || 0}`,
                         inline: true
                     },
                     {
-                        name: '🖥️ System Load',
+                        name: 'System Load',
                         value: `**CPU Load (1m):** ${formatCpuLoad(cpuUsage[0])}\n` +
                                `**CPU Load (5m):** ${formatCpuLoad(cpuUsage[1])}\n` +
                                `**CPU Load (15m):** ${formatCpuLoad(cpuUsage[2])}\n` +
@@ -134,39 +100,28 @@ module.exports = {
                         inline: true
                     },
                     {
-                        name: '💾 Memory Usage',
+                        name: 'Memory Usage',
                         value: `**System Used:** ${formatBytes(usedMemory)} / ${formatBytes(totalMemory)} (${((usedMemory / totalMemory) * 100).toFixed(1)}%)\n` +
                                `**Bot RSS:** ${formatBytes(memoryUsage.rss)}\n` +
                                `**Bot Heap:** ${formatBytes(memoryUsage.heapUsed)} / ${formatBytes(memoryUsage.heapTotal)}`,
                         inline: true
                     },
                     {
-                        name: '⚙️ System Information',
+                        name: 'System Information',
                         value: `**Platform:** ${os.platform()} ${os.arch()}\n` +
                                `**Node.js:** ${process.version}\n` +
                                `**System Uptime:** ${formatUptime(systemUptime)}`,
                         inline: true
                     },
                     {
-                        name: '🔗 Links & Support',
+                        name: 'Links & Support',
                         value: `**Repository:** [GitHub](${repo})\n` +
                                `**Report Issues:** [Issues Page](${issuesUrl})\n` +
                                `**License:** MIT`,
                         inline: true
                     },
-                    {
-                        name: '🎵 YouTube Configuration',
-                        value: `**Priority Order:** 🔧 Default (v2.4) → 🍪 Cookies → 🔑 API\n` +
-                               `**Current Method:** ${youtubeConfigStats.currentMethod === 'api' ? '🔑 API (Fallback)' : youtubeConfigStats.currentMethod === 'cookies' ? '🍪 Cookies (if available)' : '🔧 Default (v2.4 compatibility)'}\n` +
-                               `**API Status:** ${youtubeConfigStats.apiEnabled ? '✅ Enabled' : '❌ Disabled'}\n` +
-                               `**API Keys:** ${youtubeConfigStats.keysAvailable} total (${youtubeConfigStats.activeKeys || 0} active)\n` +
-                               `**Cookies:** ${youtubeConfigStats.cookiesConfigured ? '✅ Configured' : '❌ Not configured'}\n` +
-                               `**Quota Used:** ${youtubeConfigStats.quotaUsed.toLocaleString()}/${youtubeConfigStats.totalQuota.toLocaleString()} units\n` +
-                               `**HTML Cleanup:** ✅ Auto-cleanup enabled`,
-                        inline: true
-                    }
                 )
-                .setFooter({ 
+                .setFooter({
                     text: `${interaction.client.user.username} • Created by ${author}`,
                     iconURL: interaction.client.user.displayAvatarURL()
                 })
@@ -181,7 +136,7 @@ module.exports = {
 
         } catch (error) {
             console.error('Error in info command:', error);
-            await interaction.editReply('❌ An error occurred while fetching bot information.');
+            await interaction.editReply('An error occurred while fetching bot information.');
         }
     },
 };

@@ -1,11 +1,17 @@
 const fs = require('fs');
 const path = require('path');
 const env = require('dotenv').config();
-const { Client, GatewayIntentBits, Collection } = require('discord.js');
-const CacheManager = require('./src/utils/cacheManager');
+const { Client, GatewayIntentBits, Collection, EmbedBuilder } = require('discord.js');
+const { DisTube } = require('distube');
+const { YtDlpPlugin } = require('@distube/yt-dlp');
+const { SpotifyPlugin } = require('@distube/spotify');
+const { SoundCloudPlugin } = require('@distube/soundcloud');
+const { DirectLinkPlugin } = require('@distube/direct-link');
+const CacheManager = require('./utils/cacheManager');
 const musicPlayer = require('./utils/musicPlayer');
 const preset24h = require('./utils/preset24h');
 const logger = require('./utils/logger');
+const { t } = require('./utils/i18n');
 
 const client = new Client({
     intents: [
@@ -52,6 +58,204 @@ logger.success('LOADER', `Commands loaded: ${loadedCommands} success, ${failedCo
 
 // Initialize cache manager
 const cacheManager = new CacheManager();
+
+// ==================== DISTUBE INITIALIZATION ====================
+
+const distube = new DisTube(client, {
+    plugins: [
+        new YtDlpPlugin({ update: true }),
+        new SpotifyPlugin({
+            api: {
+                clientId: process.env.SPOTIFY_CLIENT_ID,
+                clientSecret: process.env.SPOTIFY_CLIENT_SECRET,
+            },
+        }),
+        new SoundCloudPlugin(),
+        new DirectLinkPlugin(),
+    ],
+    emitNewSongOnly: false,
+    savePreviousSongs: true,
+});
+
+// Attach to client for access in commands
+client.distube = distube;
+
+// Connect DisTube to musicPlayer singleton
+musicPlayer.setDistube(distube);
+
+// Connect DisTube to recommendation engine for search functionality
+const recommendationEngine = require('./utils/recommendationEngine');
+recommendationEngine.setDistube(distube);
+
+logger.info('MUSIC', 'DisTube initialized with plugins: yt-dlp, Spotify, SoundCloud, DirectLink');
+
+// ==================== DISTUBE EVENTS ====================
+
+distube.on('playSong', async (queue, song) => {
+    logger.info('MUSIC', `Playing: ${song.name} [${song.formattedDuration}] in guild ${queue.id}`);
+
+    // Cancel any scheduled disconnect since we're playing
+    musicPlayer.cancelScheduledDisconnect(queue.id);
+
+    // Build now-playing embed
+    const embed = new EmbedBuilder()
+        .setTitle(t('music.now_playing'))
+        .setDescription(`**[${song.name}](${song.url})**`)
+        .setThumbnail(song.thumbnail || null)
+        .setColor(0x00AE86)
+        .addFields(
+            { name: t('music.duration'), value: song.formattedDuration || '0:00', inline: true },
+            { name: t('music.requested_by'), value: song.user?.toString() || song.metadata?.requestedBy || 'Unknown', inline: true },
+        );
+
+    if (song.uploader?.name) {
+        embed.addFields({ name: t('music.artist'), value: song.uploader.name, inline: true });
+    }
+
+    // Add auto-suggestion indicator if applicable
+    if (song.metadata?.autoSuggestion) {
+        embed.setFooter({ text: `Auto-Suggestion: ${song.metadata.suggestionReason || 'Based on your listening history'}` });
+    }
+
+    try {
+        if (queue.textChannel) {
+            await queue.textChannel.send({ embeds: [embed] });
+        }
+    } catch (err) {
+        logger.error('MUSIC', `Failed to send now-playing embed: ${err.message}`);
+    }
+
+    // Record to play history for recommendation engine
+    try {
+        const Database = require('./utils/database.js');
+        const db = new Database();
+        const convertedSong = musicPlayer._convertSong(song);
+        if (convertedSong && song.user?.id) {
+            await db.addToHistory(queue.id, song.user.id, convertedSong);
+        }
+    } catch (err) {
+        logger.error('MUSIC', `Failed to record play history: ${err.message}`);
+    }
+});
+
+distube.on('addSong', async (queue, song) => {
+    logger.info('MUSIC', `Added to queue: ${song.name} [${song.formattedDuration}]`);
+
+    // Don't send embed for auto-suggestions (the playSong event handles display)
+    if (song.metadata?.autoSuggestion) return;
+
+    // Only send "added to queue" if there's already a song playing (position > 1)
+    if (queue.songs.length <= 1) return;
+
+    const embed = new EmbedBuilder()
+        .setTitle(t('music.added_to_queue'))
+        .setDescription(`**[${song.name}](${song.url})**`)
+        .setThumbnail(song.thumbnail || null)
+        .setColor(0x3498DB)
+        .addFields(
+            { name: t('music.duration'), value: song.formattedDuration || '0:00', inline: true },
+            { name: t('music.position'), value: `#${queue.songs.length}`, inline: true },
+            { name: t('music.requested_by'), value: song.user?.toString() || 'Unknown', inline: true },
+        );
+
+    try {
+        if (queue.textChannel) {
+            await queue.textChannel.send({ embeds: [embed] });
+        }
+    } catch (err) {
+        logger.error('MUSIC', `Failed to send add-to-queue embed: ${err.message}`);
+    }
+});
+
+distube.on('addList', async (queue, playlist) => {
+    logger.info('MUSIC', `Playlist added: ${playlist.name} (${playlist.songs.length} songs)`);
+
+    const embed = new EmbedBuilder()
+        .setTitle(t('music.playlist_added'))
+        .setDescription(`**${playlist.name}**`)
+        .setThumbnail(playlist.thumbnail || null)
+        .setColor(0x9B59B6)
+        .addFields(
+            { name: t('music.tracks'), value: `${playlist.songs.length}`, inline: true },
+            { name: t('music.requested_by'), value: playlist.songs[0]?.user?.toString() || 'Unknown', inline: true },
+        );
+
+    try {
+        if (queue.textChannel) {
+            await queue.textChannel.send({ embeds: [embed] });
+        }
+    } catch (err) {
+        logger.error('MUSIC', `Failed to send playlist embed: ${err.message}`);
+    }
+});
+
+distube.on('finishSong', async (queue, song) => {
+    logger.info('MUSIC', `Finished: ${song.name} in guild ${queue.id}`);
+
+    // Check auto-suggestions if queue is running low
+    try {
+        await musicPlayer.checkAndAddAutoSuggestions(queue.id, queue.songs);
+    } catch (err) {
+        logger.error('MUSIC', `Auto-suggestion check failed: ${err.message}`);
+    }
+});
+
+distube.on('finish', async (queue) => {
+    logger.info('MUSIC', `Queue finished in guild ${queue.id}`);
+
+    // Check 24/7 mode - if enabled, play preset music
+    try {
+        const status = await musicPlayer.get24hStatus(queue.id);
+        if (status.enabled) {
+            logger.info('MUSIC', `24/7 mode active - playing preset for guild ${queue.id}`);
+            await musicPlayer.playPreset24h(queue.id);
+        } else {
+            // Schedule disconnect after timeout
+            musicPlayer.scheduleDisconnect(queue.id, 'Queue empty');
+        }
+    } catch (err) {
+        logger.error('MUSIC', `Finish handler error: ${err.message}`);
+        musicPlayer.scheduleDisconnect(queue.id, 'Queue empty (error fallback)');
+    }
+});
+
+distube.on('disconnect', (queue) => {
+    logger.info('MUSIC', `Disconnected from voice in guild ${queue.id}`);
+    musicPlayer.cancelScheduledDisconnect(queue.id);
+    musicPlayer.resetAutoSuggestionCounter(queue.id);
+});
+
+distube.on('error', (error, queue, song) => {
+    logger.error('MUSIC', `DisTube error: ${error.message}`, {
+        guild: queue?.id,
+        song: song?.name,
+        stack: error.stack
+    });
+
+    try {
+        if (queue?.textChannel) {
+            const embed = new EmbedBuilder()
+                .setTitle('Music Error')
+                .setDescription(t('music.error_processing_request'))
+                .setColor(0xE74C3C);
+
+            if (song?.name) {
+                embed.addFields({ name: 'Song', value: song.name, inline: true });
+            }
+
+            queue.textChannel.send({ embeds: [embed] }).catch(() => {});
+        }
+    } catch (err) {
+        // Silently fail if we can't send the error message
+    }
+});
+
+distube.on('empty', (queue) => {
+    logger.info('MUSIC', `Voice channel empty in guild ${queue.id}`);
+    musicPlayer.scheduleDisconnect(queue.id, 'Voice channel empty');
+});
+
+// ==================== CLIENT EVENTS ====================
 
 client.once('ready', () => {
     logger.success('BOT', `Logged in as ${client.user.tag}!`);
@@ -115,9 +319,8 @@ client.on('interactionCreate', async interaction => {
                 content: `⚠️ Command \`/${interaction.commandName}\` is not registered in Discord.\n\n` +
                         `**Possible solutions:**\n` +
                         `• Deploy admin commands: \`npm run deploy-admin\`\n` +
-                        `• Deploy all commands: \`npm run deploy-all\`\n` +
-                        `• Manual admin deployment: \`node slashbuilder-admin.js --admin --user=${process.env.ADMIN_ID}\`\n\n` +
-                        `**Available admin commands:** youtube, admin24h, admingift, economyadmin, cleancache, cookies, youtubemode`,
+                        `• Deploy all commands: \`npm run deploy\`\n\n` +
+                        `**Available admin commands:** admin24h, cleancache`,
                 ephemeral: true
             });
         } else {
@@ -236,6 +439,9 @@ client.on('voiceStateUpdate', (oldState, newState) => {
 process.on('SIGINT', () => {
     logger.warn('SYSTEM', '🔄 Bot shutting down (SIGINT)...');
     
+    // Stop scheduled cleanup to prevent memory leaks
+    musicPlayer.stopScheduledCleanup();
+    
     // Log final stats
     const logStats = logger.getStats();
     if (logStats) {
@@ -251,6 +457,9 @@ process.on('SIGINT', () => {
 
 process.on('SIGTERM', () => {
     logger.warn('SYSTEM', '🔄 Bot terminating (SIGTERM)...');
+    
+    // Stop scheduled cleanup to prevent memory leaks
+    musicPlayer.stopScheduledCleanup();
     
     // Log final stats
     const logStats = logger.getStats();

@@ -291,6 +291,92 @@
       "triple_indicator": "🎯 (TRIPLE!)"
     }
   },
+  "math": {
+    "titles": {
+      "basic_calculation": "🧮 Basic Calculation",
+      "derivative_calculator": "📈 Derivative Calculator",
+      "quadratic_solver": "📊 Quadratic Equation Solver",
+      "cubic_solver": "📈 Cubic Equation Solver",
+      "definite_integral": "🔢 Definite Integral (Numerical)",
+      "indefinite_integral": "∫ Indefinite Integral",
+      "matrix_operations": "🔢 Matrix Operations",
+      "help_title": "🧮 Math Command Help"
+    },
+    "labels": {
+      "expression": "Expression",
+      "result": "Result",
+      "original_function": "Original Function",
+      "derivative": "Derivative",
+      "variable": "Variable",
+      "equation": "Equation",
+      "discriminant": "Discriminant",
+      "solution_type": "Solution Type",
+      "solutions": "Solutions",
+      "function": "Function",
+      "operation": "Operation",
+      "original_matrix": "Original Matrix"
+    },
+    "solution_types": {
+      "two_real": "Two real solutions",
+      "one_repeated": "One repeated solution",
+      "two_complex": "Two complex solutions"
+    },
+    "errors": {
+      "invalid_expression": "❌ Error calculating expression: {error}\\n\\nTip: Use parentheses for clarity and check function syntax.",
+      "derivative_error": "❌ Error calculating derivative: {error}\\n\\nTip: Use proper syntax like x^2, sin(x), exp(x), ln(x)",
+      "quadratic_zero_a": "❌ Coefficient \"a\" cannot be zero for a quadratic equation!",
+      "cubic_zero_a": "❌ Coefficient \"a\" cannot be zero for a cubic equation!",
+      "quadratic_error": "❌ Error solving quadratic equation: {error}",
+      "cubic_error": "❌ Error solving cubic equation: {error}\\n\\nNote: Some cubic equations may be too complex to solve analytically.",
+      "integral_error": "❌ Error calculating integral: {error}\\n\\nTip: Use simple functions like x^n, sin(x), cos(x), exp(x), ln(x)",
+      "matrix_error": "❌ Error with matrix operation: {error}\\n\\nTip: Use format [[1,2],[3,4]] for a 2x2 matrix",
+      "general_error": "❌ An error occurred while processing your math problem. Please check your input and try again."
+    },
+    "footers": {
+      "help_examples": "Use /math help for more examples",
+      "supported_functions": "Supports: polynomials, trig functions, exp, ln, etc.",
+      "quadratic_formula": "Quadratic formula: x = (-b ± √(b²-4ac)) / 2a",
+      "cubic_note": "Cubic equations can have up to 3 solutions (real or complex)",
+      "integration_note": "Note: Symbolic integration is limited. Consider using specialized tools for complex integrals.",
+      "matrix_format": "Matrix format: [[1,2],[3,4]] or [1,2;3,4]",
+      "mathjs_powered": "Powered by Math.js • Use parentheses for complex expressions"
+    },
+    "help": {
+      "description": "Comprehensive mathematical problem solver",
+      "basic_calculations": {
+        "title": "📊 Basic Calculations",
+        "examples": "`/math calculate expression:2+2*3`\\n`/math calculate expression:sqrt(16)+sin(pi/2)`\\n`/math calculate expression:log(100,10)`"
+      },
+      "derivatives": {
+        "title": "📈 Derivatives",
+        "examples": "`/math derivative function:x^2`\\n`/math derivative function:sin(x)*cos(x)`\\n`/math derivative function:exp(x^2) variable:x`"
+      },
+      "quadratic": {
+        "title": "📊 Quadratic Equations",
+        "examples": "`/math quadratic a:1 b:-5 c:6`\\n(Solves x² - 5x + 6 = 0)"
+      },
+      "cubic": {
+        "title": "📈 Cubic Equations",
+        "examples": "`/math cubic a:1 b:0 c:-1 d:0`\\n(Solves x³ - x = 0)"
+      },
+      "integrals": {
+        "title": "∫ Integrals",
+        "examples": "`/math integral function:x^2`\\n`/math integral function:sin(x) lower_bound:0 upper_bound:3.14159`"
+      },
+      "matrix": {
+        "title": "🔢 Matrix Operations",
+        "examples": "`/math matrix operation:det matrix:[[1,2],[3,4]]`\\n`/math matrix operation:inv matrix:[1,2;3,4]`"
+      },
+      "supported_functions": {
+        "title": "🔧 Supported Functions",
+        "content": "`sin, cos, tan, asin, acos, atan`\\n`exp, ln, log, sqrt, abs`\\n`factorial (use !), combinations, permutations`"
+      },
+      "constants": {
+        "title": "🔤 Constants",
+        "content": "`pi, e, i (imaginary unit)`\\n`phi (golden ratio)`\\n`tau (2*pi)`"
+      }
+    }
+  },
   "commands": {
     "baccarat": {
       "description": "Play Baccarat card game for money"
@@ -320,10 +406,14 @@
       "description": "Work to earn some money"
     },
     "tomcuaca": {
-      "description": "Play Tôm Cua Cá (Vietnamese dice game) for money"
+      "description": "Play Tôm Cua Cá (Vietnamese dice game) for money",
+      "amount_to_bet": "Amount to Bet"
     },
     "taixiu": {
       "description": "Play Tài Xỉu (Sicbo) dice game for money"
+    },
+    "stats": {
+      "description": "Show detailed player statistics and performance metrics"
     },
     "help": {
       "description": "Show all available commands and their usage",
@@ -363,6 +453,47 @@
       "show_gift_code_redemption_history": "Show gift code redemption history",
       "show_gift_code_system_statistics": "Show gift code system statistics",
       "clean_up_expired_gift_codes": "Clean up expired gift codes"
+    },
+    "math": {
+      "description": "Solve mathematical problems including basic math, derivatives, quadratic equations, and more",
+      "solve_mathematical_problems": "Solve mathematical problems including basic math, derivatives, quadratic equations, and more",
+      "calculate": {
+        "description": "Perform basic calculations and evaluate mathematical expressions",
+        "expression": "Mathematical expression to calculate (e.g., 2+2, sqrt(16), sin(pi/2))"
+      },
+      "derivative": {
+        "description": "Calculate the derivative of a function",
+        "function": "Function to derive (e.g., x^2, sin(x), ln(x))",
+        "variable": "Variable to derive with respect to (default: x)"
+      },
+      "quadratic": {
+        "description": "Solve quadratic equations (ax² + bx + c = 0)",
+        "coefficient_a": "Coefficient a (x² term)",
+        "coefficient_b": "Coefficient b (x term)",
+        "coefficient_c": "Coefficient c (constant term)"
+      },
+      "cubic": {
+        "description": "Solve cubic equations (ax³ + bx² + cx + d = 0)",
+        "coefficient_a": "Coefficient a (x³ term)",
+        "coefficient_b": "Coefficient b (x² term)",
+        "coefficient_c": "Coefficient c (x term)",
+        "coefficient_d": "Coefficient d (constant term)"
+      },
+      "integral": {
+        "description": "Calculate the integral of a function",
+        "function": "Function to integrate (e.g., x^2, sin(x), 1/x)",
+        "variable": "Variable to integrate with respect to (default: x)",
+        "lower_bound": "Lower bound for definite integral (optional)",
+        "upper_bound": "Upper bound for definite integral (optional)"
+      },
+      "matrix": {
+        "description": "Perform matrix operations",
+        "operation": "Matrix operation to perform",
+        "matrix": "Matrix in format [[1,2],[3,4]] or [1,2;3,4]"
+      },
+      "help": {
+        "description": "Show help and examples for the math command"
+      }
     }
   },
   "music": {

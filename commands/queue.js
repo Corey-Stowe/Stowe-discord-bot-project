@@ -1,6 +1,7 @@
 const { SlashCommandBuilder, EmbedBuilder, ActionRowBuilder, ButtonBuilder, ButtonStyle, ComponentType } = require('discord.js');
-const fs = require('fs');
-const path = require('path');
+const musicPlayer = require('../utils/musicPlayer.js');
+const i18n = require('../utils/i18n.js');
+const logger = require('../utils/logger');
 
 module.exports = {
     data: new SlashCommandBuilder()
@@ -11,100 +12,78 @@ module.exports = {
         await interaction.deferReply();
         try {
             const guildId = interaction.guild.id;
-            const queuePath = path.join(__dirname, '../data/queues.json');
-            let queues = {};
-            if (fs.existsSync(queuePath)) {
-                try {
-                    const fileContent = fs.readFileSync(queuePath, 'utf8');
-                    queues = JSON.parse(fileContent);
-                } catch (error) {
-                    console.error('Queue JSON parse error:', error);
-                    try {
-                        fs.writeFileSync(queuePath, JSON.stringify({}));
-                        console.log('Reset corrupted queue file');
-                    } catch (writeError) {
-                        console.error('Failed to reset queue file:', writeError);
-                    }
-                    return interaction.editReply({
-                        content: '❌ Queue file was corrupted but has been reset. Please try adding songs again.',
-                        ephemeral: true
-                    });
-                }
-            }
-            const queue = queues[guildId];
-            if (!queue || queue.length === 0) {
+            const lang = await i18n.getLanguage(guildId, interaction.user.id);
+            const queue = musicPlayer.getQueue(guildId);
+
+            if (!queue || queue.songs.length === 0) {
                 const emptyEmbed = new EmbedBuilder()
                     .setColor('#ff6b6b')
-                    .setTitle('📋 Music Queue')
-                    .setDescription('The queue is currently empty. Use `/play` to add songs!')
+                    .setTitle(i18n.translate(lang, 'music.queue_title'))
+                    .setDescription(i18n.translate(lang, 'music.queue_empty'))
                     .setTimestamp();
                 return interaction.editReply({ embeds: [emptyEmbed] });
             }
 
+            const songs = queue.songs;
+            const isPlaying = !queue.paused;
+
             // Pagination logic
             const pageSize = 10;
             let page = 0;
-            const totalPages = Math.ceil(queue.length / pageSize);
+            const totalPages = Math.ceil(songs.length / pageSize);
 
             // Helper to format queue page
             function formatQueuePage(pageIdx) {
                 const start = pageIdx * pageSize;
                 const end = start + pageSize;
-                return queue.slice(start, end).map((song, idx) => {
-                    const status = (start + idx === 0 && isPlaying) ? '🎵 ' : `${start + idx + 1}. `;
-                    return `${status}**${song.title}** - ${song.author} (requested by ${song.requestedBy})`;
+                return songs.slice(start, end).map((song, idx) => {
+                    const position = start + idx + 1;
+                    const status = (start + idx === 0 && isPlaying) ? '\uD83C\uDFB5 ' : `${position}. `;
+                    const priorityIcon = song.metadata?.autoSuggestion ? '\uD83E\uDD16 ' : '\uD83D\uDC64 ';
+                    const name = song.name || song.title || 'Unknown';
+                    const artist = song.uploader?.name || song.author || 'Unknown';
+                    const requester = song.user?.tag || song.metadata?.requestedBy || 'Unknown';
+                    return `${status}${priorityIcon}**${name}** - ${artist} (requested by ${requester})`;
                 }).join('\n');
             }
 
-            // Calculate total duration if available
+            // Calculate total duration
             let totalDuration = 'Unknown';
-            if (queue.some(song => song.duration)) {
-                const totalSeconds = queue.reduce((acc, song) => {
-                    if (song.duration) {
-                        if (typeof song.duration === 'number') {
-                            return acc + song.duration;
-                        }
-                        if (typeof song.duration === 'string') {
-                            const parts = song.duration.split(':').map(Number);
-                            if (parts.length === 2) {
-                                return acc + (parts[0] * 60) + parts[1];
-                            } else if (parts.length === 3) {
-                                return acc + (parts[0] * 3600) + (parts[1] * 60) + parts[2];
-                            }
-                        }
-                    }
-                    return acc;
-                }, 0);
-                if (totalSeconds > 0) {
-                    const hours = Math.floor(totalSeconds / 3600);
-                    const minutes = Math.floor((totalSeconds % 3600) / 60);
-                    totalDuration = hours > 0 ? `${hours}:${minutes.toString().padStart(2, '0')}:${(totalSeconds % 60).toString().padStart(2, '0')}`
-                        : `${minutes}:${(totalSeconds % 60).toString().padStart(2, '0')}`;
-                }
+            const totalSeconds = songs.reduce((acc, song) => acc + (song.duration || 0), 0);
+            if (totalSeconds > 0) {
+                const hours = Math.floor(totalSeconds / 3600);
+                const minutes = Math.floor((totalSeconds % 3600) / 60);
+                const secs = Math.floor(totalSeconds % 60);
+                totalDuration = hours > 0
+                    ? `${hours}:${minutes.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`
+                    : `${minutes}:${secs.toString().padStart(2, '0')}`;
             }
-
-            // Check if bot is currently playing
-            const connection = interaction.client.voice?.connections?.get(guildId);
-            const isPlaying = connection && connection.state.subscription?.player?.state.status === 'playing';
 
             // Build embed for a page
             function buildEmbed(pageIdx) {
                 const embed = new EmbedBuilder()
                     .setColor('#0099ff')
-                    .setTitle('📋 Music Queue')
+                    .setTitle(i18n.translate(lang, 'music.queue_title'))
                     .setDescription(formatQueuePage(pageIdx))
                     .addFields(
-                        { name: '📊 Queue Stats', value:
-                            `**Songs:** ${queue.length}\n` +
-                            `**Status:** ${isPlaying ? '▶️ Playing' : '⏸️ Stopped'}\n` +
-                            `**Total Duration:** ${totalDuration}`, inline: true }
+                        { name: '\uD83D\uDCCA Queue Stats', value:
+                            `**Songs:** ${songs.length}\n` +
+                            `**Status:** ${isPlaying ? '\u25B6\uFE0F Playing' : '\u23F8\uFE0F Paused'}\n` +
+                            `**Total Duration:** ${totalDuration}`, inline: true },
+                        { name: '\uD83C\uDFAF Priority System', value:
+                            '\uD83D\uDC64 Manual requests\n' +
+                            '\uD83E\uDD16 Auto-suggestions', inline: true }
                     )
                     .setFooter({
-                        text: totalPages > 1 ? `Page ${pageIdx + 1} of ${totalPages}` : `${queue.length} songs in queue`
+                        text: totalPages > 1
+                            ? `Page ${pageIdx + 1} of ${totalPages} \u2022 Manual requests play first`
+                            : `${songs.length} songs \u2022 Manual requests have priority`
                     })
                     .setTimestamp();
-                if (queue[pageIdx * pageSize] && queue[pageIdx * pageSize].thumbnail) {
-                    embed.setThumbnail(queue[pageIdx * pageSize].thumbnail);
+
+                const pageSong = songs[pageIdx * pageSize];
+                if (pageSong && pageSong.thumbnail) {
+                    embed.setThumbnail(pageSong.thumbnail);
                 }
                 return embed;
             }
@@ -152,18 +131,20 @@ module.exports = {
                     if (page < totalPages - 1) page++;
                     await i.update({ embeds: [buildEmbed(page)], components: [buildActionRow(page)] });
                 } else if (i.customId === 'queue_clear') {
-                    // Clear the queue for this guild
-                    queues[guildId] = [];
+                    // Stop the queue via DisTube (clears the queue and stops playback)
                     try {
-                        fs.writeFileSync(queuePath, JSON.stringify(queues, null, 2));
+                        const currentQueue = musicPlayer.getQueue(guildId);
+                        if (currentQueue) {
+                            currentQueue.stop();
+                        }
                     } catch (err) {
-                        console.error('Failed to clear queue:', err);
+                        logger.error('MUSIC', `Failed to clear queue: ${err.message}`);
                     }
                     collector.stop('cleared');
                     const clearedEmbed = new EmbedBuilder()
                         .setColor('#ff6b6b')
-                        .setTitle('📋 Music Queue')
-                        .setDescription('The queue has been cleared. Use `/play` to add songs!')
+                        .setTitle(i18n.translate(lang, 'music.queue_title'))
+                        .setDescription(i18n.translate(lang, 'music.queue_empty'))
                         .setTimestamp();
                     return i.update({ embeds: [clearedEmbed], components: [] });
                 }
@@ -177,10 +158,10 @@ module.exports = {
                 }
             });
         } catch (error) {
-            console.error('Queue command error:', error);
+            logger.error('MUSIC', `Queue command error: ${error.message}`);
             const errorEmbed = new EmbedBuilder()
                 .setColor('#ff0000')
-                .setTitle('❌ Error')
+                .setTitle('\u274C Error')
                 .setDescription('An error occurred while fetching the queue.')
                 .setTimestamp();
             await interaction.editReply({ embeds: [errorEmbed], components: [] });

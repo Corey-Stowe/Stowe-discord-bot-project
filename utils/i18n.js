@@ -316,10 +316,11 @@ class I18nManager {
     // Get user's preferred language (async)
     async getUserLanguage(userId) {
         try {
-            const userData = require('./userdata.js');
-            return await userData.getUserLanguage(userId);
+            const fsPromises = require('fs').promises;
+            const settingsPath = path.join(__dirname, '..', 'data', 'user_language.json');
+            const data = JSON.parse(await fsPromises.readFile(settingsPath, 'utf8'));
+            return data[userId] || null;
         } catch (error) {
-            console.warn('Error getting user language:', error);
             return null;
         }
     }
@@ -351,21 +352,23 @@ class I18nManager {
     // Set user's language preference
     async setUserLanguage(userId, languageCode) {
         try {
-            const userData = require('./userdata.js');
-            const success = await userData.setUserLanguage(userId, languageCode);
-            
-            if (success) {
-                // Update cache
-                if (!this.userLanguageCache) {
-                    this.userLanguageCache = new Map();
-                }
-                this.userLanguageCache.set(userId, {
-                    language: languageCode,
-                    timestamp: Date.now()
-                });
+            const fsPromises = require('fs').promises;
+            const settingsPath = path.join(__dirname, '..', 'data', 'user_language.json');
+            let data = {};
+            try { data = JSON.parse(await fsPromises.readFile(settingsPath, 'utf8')); } catch {}
+            data[userId] = languageCode;
+            await fsPromises.writeFile(settingsPath, JSON.stringify(data, null, 2));
+
+            // Update cache
+            if (!this.userLanguageCache) {
+                this.userLanguageCache = new Map();
             }
-            
-            return success;
+            this.userLanguageCache.set(userId, {
+                language: languageCode,
+                timestamp: Date.now()
+            });
+
+            return true;
         } catch (error) {
             console.error('Error setting user language:', error);
             return false;

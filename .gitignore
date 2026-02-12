@@ -1,0 +1,38 @@
+# Environment
+.env
+.env.local
+.env.*.local
+
+# Node
+node_modules/
+
+# Downloads cache (regenerated at runtime)
+downloads/
+!downloads/.gitkeep
+
+# Logs (generated at runtime)
+logs/
+!logs/.gitkeep
+
+# Runtime data
+data/cache.json
+data/play_history.json
+data/user_language.json
+data/suggestion_settings.json
+
+# Keep preset music directory structure
+!data/preset-music/.gitkeep
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Editor files
+.idea/
+.vscode/
+*.swp
+*.swo
+
+# Claude Code temp files
+tmpclaude-*
+nul

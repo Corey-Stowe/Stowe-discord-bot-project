@@ -84,9 +84,25 @@ class Database {
         }
     }
 
-    async addToQueue(guildId, song) {
+    async addToQueue(guildId, song, priority = 'manual') {
         const queue = await this.getQueue(guildId);
-        queue.push(song);
+        
+        if (priority === 'auto' || song.autoSuggestion) {
+            // Auto-suggestions go to the end of the queue
+            queue.push(song);
+        } else {
+            // Manual requests are prioritized
+            // Find the insertion point: after all manual songs but before auto-suggestions
+            let insertIndex = queue.length;
+            for (let i = 0; i < queue.length; i++) {
+                if (queue[i].autoSuggestion) {
+                    insertIndex = i;
+                    break;
+                }
+            }
+            queue.splice(insertIndex, 0, song);
+        }
+        
         await this.setQueue(guildId, queue);
         return queue;
     }
@@ -196,6 +212,19 @@ class Database {
         } catch (error) {
             console.error('Error getting 24h mode:', error);
             return { enabled: false, channelId: null };
+        }
+    }
+
+    /**
+     * Get recent guild activity for auto-suggestion user detection
+     */
+    async getGuildHistory(guildId, limit = 10) {
+        try {
+            const recommendationEngine = require('./recommendationEngine.js');
+            return recommendationEngine.getServerHistory(guildId, limit);
+        } catch (error) {
+            console.error('Error getting guild history:', error);
+            return [];
         }
     }
 }

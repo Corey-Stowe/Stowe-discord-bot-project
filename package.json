@@ -1,38 +1,30 @@
 {
-  "name": "stowebot",
-  "version": "2.5.1",
-  "description": "Discord Bot",
+  "name": "stowebot-free",
+  "version": "1.0.0",
+  "description": "StoweBot Free - Open-source Discord music bot with multi-platform support and 24/7 playback",
   "main": "index.js",
   "scripts": {
     "start": "node --no-deprecation index.js",
     "dev": "node --watch --no-deprecation index.js",
     "deploy": "node slashbuilder.js",
-    "deploy-admin": "powershell -ExecutionPolicy Bypass -File deploy-commands.ps1 2",
-    "deploy-all": "powershell -ExecutionPolicy Bypass -File deploy-commands.ps1 3",
     "undeploy": "node resetslash.js",
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "postinstall": "node scripts/patch-ytdlp.js"
   },
   "author": "Stowe",
   "license": "MIT",
-  "overrides": {
-    "whatwg-url": "^11.0.0",
-    "tr46": "^4.1.1"
-  },
   "dependencies": {
     "@discordjs/builders": "^1.10.0",
     "@discordjs/opus": "^0.10.0",
     "@discordjs/voice": "^0.18.0",
-    "@distube/ytdl-core": "^4.16.12",
-    "@mongez/dotenv": "^1.1.9",
+    "@distube/direct-link": "^1.0.1",
+    "@distube/soundcloud": "^2.0.4",
+    "@distube/spotify": "^2.0.2",
+    "@distube/yt-dlp": "^2.0.1",
+    "axios": "^1.13.5",
     "discord.js": "^14.17.3",
-    "dot-env": "^0.0.1",
+    "distube": "^5.2.3",
     "dotenv": "^16.5.0",
-    "ffmpeg": "^0.0.4",
-    "googleapis": "^144.0.0",
-    "sodium-native": "^5.0.6",
-    "soundcloud-downloader": "^1.0.0",
-    "spotify-web-api-node": "^5.0.2",
-    "youtube-sr": "^4.3.11",
-    "ytpl": "^2.3.0"
+    "opusscript": "^0.0.8",
+    "sodium-native": "^5.0.6"
   }
 }

@@ -297,6 +297,92 @@
       "triple_indicator": "🎯 （トリプル！）"
     }
   },
+  "math": {
+    "titles": {
+      "basic_calculation": "🧮 基本計算",
+      "derivative_calculator": "📈 導関数計算機",
+      "quadratic_solver": "📊 二次方程式ソルバー",
+      "cubic_solver": "📈 三次方程式ソルバー",
+      "definite_integral": "🔢 定積分（数値）",
+      "indefinite_integral": "∫ 不定積分",
+      "matrix_operations": "🔢 行列演算",
+      "help_title": "🧮 数学コマンドヘルプ"
+    },
+    "labels": {
+      "expression": "式",
+      "result": "結果",
+      "original_function": "元の関数",
+      "derivative": "導関数",
+      "variable": "変数",
+      "equation": "方程式",
+      "discriminant": "判別式",
+      "solution_type": "解の種類",
+      "solutions": "解",
+      "function": "関数",
+      "operation": "演算",
+      "original_matrix": "元の行列"
+    },
+    "solution_types": {
+      "two_real": "2つの実解",
+      "one_repeated": "1つの重解",
+      "two_complex": "2つの複素解"
+    },
+    "errors": {
+      "invalid_expression": "❌ 式の計算エラー: {error}\\n\\nヒント: 明確にするために括弧を使用し、関数の構文を確認してください。",
+      "derivative_error": "❌ 導関数の計算エラー: {error}\\n\\nヒント: x^2、sin(x)、exp(x)、ln(x)のような適切な構文を使用してください",
+      "quadratic_zero_a": "❌ 係数\"a\"は二次方程式でゼロにできません！",
+      "cubic_zero_a": "❌ 係数\"a\"は三次方程式でゼロにできません！",
+      "quadratic_error": "❌ 二次方程式の解法エラー: {error}",
+      "cubic_error": "❌ 三次方程式の解法エラー: {error}\\n\\n注意: 一部の三次方程式は解析的に解くには複雑すぎる場合があります。",
+      "integral_error": "❌ 積分の計算エラー: {error}\\n\\nヒント: x^n、sin(x)、cos(x)、exp(x)、ln(x)のような簡単な関数を使用してください",
+      "matrix_error": "❌ 行列演算エラー: {error}\\n\\nヒント: 2x2行列には[[1,2],[3,4]]の形式を使用してください",
+      "general_error": "❌ 数学問題の処理中にエラーが発生しました。入力を確認して再試行してください。"
+    },
+    "footers": {
+      "help_examples": "より多くの例については /math help を使用してください",
+      "supported_functions": "サポート: 多項式、三角関数、exp、ln など",
+      "quadratic_formula": "二次方程式の公式: x = (-b ± √(b²-4ac)) / 2a",
+      "cubic_note": "三次方程式は最大3つの解（実数または複素数）を持つことができます",
+      "integration_note": "注意: 記号積分は限定的です。複雑な積分には専用ツールの使用を検討してください。",
+      "matrix_format": "行列形式: [[1,2],[3,4]] または [1,2;3,4]",
+      "mathjs_powered": "Math.jsによって動力化 • 複雑な式には括弧を使用してください"
+    },
+    "help": {
+      "description": "包括的な数学問題ソルバー",
+      "basic_calculations": {
+        "title": "📊 基本計算",
+        "examples": "`/math calculate expression:2+2*3`\\n`/math calculate expression:sqrt(16)+sin(pi/2)`\\n`/math calculate expression:log(100,10)`"
+      },
+      "derivatives": {
+        "title": "📈 導関数",
+        "examples": "`/math derivative function:x^2`\\n`/math derivative function:sin(x)*cos(x)`\\n`/math derivative function:exp(x^2) variable:x`"
+      },
+      "quadratic": {
+        "title": "📊 二次方程式",
+        "examples": "`/math quadratic a:1 b:-5 c:6`\\n(x² - 5x + 6 = 0を解く)"
+      },
+      "cubic": {
+        "title": "📈 三次方程式",
+        "examples": "`/math cubic a:1 b:0 c:-1 d:0`\\n(x³ - x = 0を解く)"
+      },
+      "integrals": {
+        "title": "∫ 積分",
+        "examples": "`/math integral function:x^2`\\n`/math integral function:sin(x) lower_bound:0 upper_bound:3.14159`"
+      },
+      "matrix": {
+        "title": "🔢 行列演算",
+        "examples": "`/math matrix operation:det matrix:[[1,2],[3,4]]`\\n`/math matrix operation:inv matrix:[1,2;3,4]`"
+      },
+      "supported_functions": {
+        "title": "🔧 サポートされる関数",
+        "content": "`sin, cos, tan, asin, acos, atan`\\n`exp, ln, log, sqrt, abs`\\n`factorial (! を使用), combinations, permutations`"
+      },
+      "constants": {
+        "title": "🔤 定数",
+        "content": "`pi, e, i (虚数単位)`\\n`phi (黄金比)`\\n`tau (2*pi)`"
+      }
+    }
+  },
   "music": {
     "now_playing": "🎵 再生中",
     "added_to_queue": "📝 キューに追加",
@@ -395,6 +481,9 @@
       "play_tai_xiu_sicbo_dice_game_for_money": "お金をかけてタイシウ（シックボー）ダイスゲームをプレイ",
       "amount_to_bet": "ベット金額"
     },
+    "stats": {
+      "description": "プレイヤーの詳細な統計とパフォーマンス指標を表示"
+    },
     "crime": {
       "description": "お金のために犯罪を犯す（リスクあり！）",
       "commit_a_crime_for_money_risky": "お金のために犯罪を犯す（リスクあり！）"
@@ -435,6 +524,47 @@
       "show_gift_code_redemption_history": "ギフトコード交換履歴を表示",
       "show_gift_code_system_statistics": "ギフトコードシステム統計を表示",
       "clean_up_expired_gift_codes": "期限切れギフトコードをクリーンアップ"
+    },
+    "math": {
+      "description": "基本数学、微分、二次方程式などの数学問題を解く",
+      "solve_mathematical_problems": "基本数学、微分、二次方程式などの数学問題を解く",
+      "calculate": {
+        "description": "基本計算と数式評価を実行",
+        "expression": "計算する数式（例：2+2、sqrt(16)、sin(pi/2)）"
+      },
+      "derivative": {
+        "description": "関数の導関数を計算",
+        "function": "微分する関数（例：x^2、sin(x)、ln(x)）",
+        "variable": "微分する変数（デフォルト：x）"
+      },
+      "quadratic": {
+        "description": "二次方程式を解く（ax² + bx + c = 0）",
+        "coefficient_a": "係数a（x²項）",
+        "coefficient_b": "係数b（x項）",
+        "coefficient_c": "係数c（定数項）"
+      },
+      "cubic": {
+        "description": "三次方程式を解く（ax³ + bx² + cx + d = 0）",
+        "coefficient_a": "係数a（x³項）",
+        "coefficient_b": "係数b（x²項）",
+        "coefficient_c": "係数c（x項）",
+        "coefficient_d": "係数d（定数項）"
+      },
+      "integral": {
+        "description": "関数の積分を計算",
+        "function": "積分する関数（例：x^2、sin(x)、1/x）",
+        "variable": "積分する変数（デフォルト：x）",
+        "lower_bound": "定積分の下限（オプション）",
+        "upper_bound": "定積分の上限（オプション）"
+      },
+      "matrix": {
+        "description": "行列演算を実行",
+        "operation": "実行する行列演算",
+        "matrix": "行列（形式：[[1,2],[3,4]]または[1,2;3,4]）"
+      },
+      "help": {
+        "description": "数学コマンドのヘルプと例を表示"
+      }
     }
   }
 }
