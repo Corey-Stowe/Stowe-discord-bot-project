@@ -62,7 +62,7 @@ module.exports = {
                             { name: '🔥 Trending Now', value: 'trending' },
                             { name: '❤️ Personal Favorites', value: 'personal' },
                             { name: '🎼 Similar Genre', value: 'genre' },
-                            { name: '🎵 Last.fm Powered', value: 'lastfm' }
+                            { name: '🎵 Metadata Powered', value: 'lastfm' }
                         )
                         .setRequired(true)
                 )
@@ -97,9 +97,9 @@ module.exports = {
         .addSubcommand(subcommand =>
             subcommand
                 .setName('enhance')
-                .setDescription('Enhance existing play history with Last.fm metadata')
+                .setDescription('Enhance existing play history with music metadata')
                 .setDescriptionLocalizations({
-                    vi: 'Cải thiện lịch sử phát nhạc với metadata từ Last.fm'
+                    vi: 'Cải thiện lịch sử phát nhạc với metadata từ dịch vụ nhạc'
                 })
                 .addIntegerOption(option =>
                     option
@@ -258,7 +258,7 @@ module.exports = {
                 .setDescription(
                     '🔄 **Processing recommendations...**\n\n' +
                     '⏳ Almost done! I\'m currently:\n' +
-                    '• Searching YouTube for quality tracks\n' +
+                    '• Searching for quality tracks\n' +
                     '• Filtering out duplicates and playlists\n' +
                     '• Scoring songs based on your preferences\n\n' +
                     '🎯 Preparing your personalized recommendations!'
@@ -334,7 +334,7 @@ module.exports = {
             'trending': 'Trending Now',
             'personal': 'Personal Favorites',
             'genre': 'Similar Genre',
-            'lastfm': 'Last.fm Powered'
+            'lastfm': 'Metadata Powered'
         };
 
         // Build page function
@@ -655,7 +655,7 @@ module.exports = {
                 { name: '🏆 Top Artist', value: stats.topArtist ? `${stats.topArtist.name} (${stats.topArtist.count} plays)` : 'None', inline: true },
                 { name: '🌐 Preferred Platform', value: stats.topPlatform ? `${stats.topPlatform.name} (${stats.topPlatform.count} plays)` : 'None', inline: true },
                 { name: '🤖 Auto-Suggestions', value: stats.autoSuggestionEnabled ? '✅ Enabled' : '❌ Disabled', inline: true },
-                { name: '🎼 Last.fm Integration', value: lastFmStatus, inline: true },
+                { name: '🎼 Music Metadata', value: lastFmStatus, inline: true },
                 { name: '📈 Data Quality', value: lastFmStatus === '✅ Active' ? 'Enhanced' : 'Standard', inline: true },
                 { name: '🎯 Recommendation Engine', value: lastFmStatus === '✅ Active' ? 'Multi-source' : 'Local', inline: true },
                 { name: '📅 First Play', value: stats.firstPlay ? formatDate(stats.firstPlay) : 'Unknown', inline: true },
@@ -678,15 +678,15 @@ module.exports = {
                 .slice(0, 5)
                 .map(t => `${t.name} (${t.count})`)
                 .join(', ');
-            statsEmbed.addFields({ name: '🏷️ Last.fm Tags', value: tagList });
+            statsEmbed.addFields({ name: '🏷️ Music Tags', value: tagList });
         }
 
         statsEmbed
             .setThumbnail(interaction.user.displayAvatarURL())
             .setFooter({ 
-                text: lastFmStatus === '✅ Active' 
-                    ? 'Enhanced with Last.fm metadata • Use /suggestion enhance to update existing history'
-                    : 'Statistics updated in real-time • Enable Last.fm for better recommendations' 
+                text: lastFmStatus === '✅ Active'
+                    ? 'Enhanced with music metadata • Use /suggestion enhance to update existing history'
+                    : 'Statistics updated in real-time • Enable metadata service for better recommendations' 
             })
             .setTimestamp();
 
@@ -920,11 +920,11 @@ module.exports = {
             const startEmbed = new EmbedBuilder()
                 .setColor('#ff9500')
                 .setTitle('🔧 Enhancing Play History')
-                .setDescription('Fetching enhanced metadata from Last.fm...')
+                .setDescription('Fetching enhanced metadata from music services...')
                 .addFields(
                     { name: '📊 Processing', value: `Up to ${limit} songs`, inline: true },
                     { name: '⏱️ Estimated Time', value: `~${Math.ceil(limit / 60)} minutes`, inline: true },
-                    { name: '🎵 Data Sources', value: 'Last.fm + YouTube + Local Detection', inline: true }
+                    { name: '🎵 Data Sources', value: 'Music Metadata + Video + Local Detection', inline: true }
                 )
                 .setFooter({ text: 'This may take a while due to API rate limits...' })
                 .setTimestamp();
@@ -941,7 +941,7 @@ module.exports = {
                     { name: '📊 Songs Processed', value: `${result.processed}`, inline: true },
                     { name: '🎵 Successfully Enhanced', value: `${result.enhanced}`, inline: true },
                     { name: '📈 Success Rate', value: `${result.processed > 0 ? Math.round((result.enhanced / result.processed) * 100) : 0}%`, inline: true },
-                    { name: '🎼 Last.fm Integration', value: result.lastfmAvailable ? '✅ Active' : '❌ Disabled', inline: true },
+                    { name: '🎼 Music Metadata', value: result.lastfmAvailable ? '✅ Active' : '❌ Disabled', inline: true },
                     { name: '🚀 Recommendation Quality', value: 'Significantly Improved', inline: true },
                     { name: '📊 View Updated Stats', value: 'Use `/suggestion stats`', inline: true }
                 )
